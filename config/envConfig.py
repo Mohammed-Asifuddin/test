@@ -1,0 +1,6 @@
+envVariables = {
+    "cors": {
+        "dev": "*",
+        "prod": ""
+    }
+}
