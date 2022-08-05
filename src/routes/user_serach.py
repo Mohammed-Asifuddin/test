@@ -4,7 +4,7 @@ from flask import jsonify, request
 
 from src.helpers.gCloud import vision_product_search
 
-@app.route('/search', methods=['POST'])
+@app.route('/api/user/search', methods=['POST'])
 def search_product():
     """
     User product search
