@@ -1,14 +1,15 @@
 """
 Customer API service
 """
-import os
-from src import app
-from flask_api import status
+# import os
+# from flask_api import status
+import string
 from flask import jsonify, request
+from src import app
 from src.helpers import file_validator as fv
+from src.helpers.gCloud import storage_handler as sh
 
 ROUTE = "/customer"
-
 
 @app.route(ROUTE, methods=["POST"])
 def create_customer():
@@ -20,23 +21,37 @@ def create_customer():
         resp = jsonify({"message": "Name is neither empty nor blank"})
         resp.status_code = 400
         return resp
-    if ("logo_file" not in request.files) or ("intent_file" not in request.files):
-        resp = jsonify({"message": "Attach all required files."})
+    if "logo_file" not in request.files:
+        resp = jsonify({"message": "Logo is mandatory."})
         resp.status_code = 400
         return resp
     logo_file = request.files["logo_file"]
-    intent_file = request.files["intent_file"]
-    resp: any
-    if (logo_file.filename == "") or (intent_file.filename == ""):
-        resp = jsonify({"message": "No file selected for uploading"})
+    if logo_file.filename == "":
+        resp = jsonify({"message": "No Logo file part in the request"})
         resp.status_code = 400
         return resp
-    if (logo_file and not fv.allowed_image_file(logo_file.filename)) or (
-        intent_file and not fv.allowed_intent_file(intent_file.filename)
-    ):
-        resp = jsonify({"message": "Allowed file types are png, jpg, jpeg, gif, csv"})
+    if logo_file and not fv.allowed_image_file(logo_file.filename):
+        resp = jsonify({"message": "Allowed Logo file types are png, jpg, jpeg, gif"})
         resp.status_code = 400
         return resp
+    bucket_name = "".join(char for char in name if char.isalnum()).lower()
+    bucket = sh.create_bucket(bucket_name)
+    logo_public_url = sh.upload_logo(bucket=bucket, logo_file=logo_file)
+    intent_file = ""
+    intent_public_url = ""
+    if "intent_file" in request.files:
+        intent_file = request.files["intent_file"]
+        if intent_file.filename == "":
+            resp = jsonify({"message": "No Intent file part in the request"})
+            resp.status_code = 400
+            return resp
+        if intent_file and not fv.allowed_intent_file(intent_file.filename):
+            resp = jsonify({"message": "Allowed Intent file types are csv"})
+            resp.status_code = 400
+            return resp
+        intent_public_url = sh.upload_intent(bucket=bucket, intent_file=intent_file)
+    print(logo_public_url)
+    print(intent_public_url)
     resp = jsonify({"message": "File successfully uploaded"})
     resp.status_code = 201
     return resp
