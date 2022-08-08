@@ -3,11 +3,12 @@ Customer API service
 """
 # import os
 # from flask_api import status
-import string
+import re
 from flask import jsonify, request
 from src import app
 from src.helpers import file_validator as fv
 from src.helpers.gCloud import storage_handler as sh
+from src.helpers.gCloud import firestore_helper as fh
 
 ROUTE = "/customer"
 
@@ -35,6 +36,14 @@ def create_customer():
         resp.status_code = 400
         return resp
     bucket_name = "".join(char for char in name if char.isalnum()).lower()
+    if len(bucket_name) < 3:
+        bucket_name = bucket_name+"000"
+    doc_id_list = fh.get_customer_by_bucket_name(bucket_name)
+    if len(doc_id_list) != 0:
+        resp = jsonify({"message": "Customer Exists"})
+        resp.status_code = 400
+        return resp
+
     bucket = sh.create_bucket(bucket_name)
     logo_public_url = sh.upload_logo(bucket=bucket, logo_file=logo_file)
     intent_file = ""
@@ -50,9 +59,20 @@ def create_customer():
             resp.status_code = 400
             return resp
         intent_public_url = sh.upload_intent(bucket=bucket, intent_file=intent_file)
-    print(logo_public_url)
-    print(intent_public_url)
-    resp = jsonify({"message": "File successfully uploaded"})
+    customer_dict = {}
+    customer_dict['name'] = name
+    customer_dict['bucket_name'] = bucket_name
+    customer_dict['logo_file_path'] = logo_public_url
+    customer_dict['intent_file_path'] = intent_public_url
+    customer_dict['status'] = False
+    customer_dict['training_status'] = 0
+    doc = fh.add_customer(customer_dict=customer_dict)
+    # TODO
+    # Create a document and save to fire store
+    # Create a dialog flow agent with customer name : pubsub
+    # if we have intent_file we have to trigger pubsub topic to create a intent,
+    # we will share customer document id
+    resp = jsonify({"message": "Customer created successfully"})
     resp.status_code = 201
     return resp
 
@@ -67,10 +87,7 @@ def update_customer():
         resp = jsonify({"message": "customer_id is neither empty nor blank"})
         resp.status_code = 400
         return resp
-    # logo_file = request.files["logo_file"]
-    # intent_file = request.files["intent_file"]
-    # need work on logo and intent file validation
-    resp = jsonify({"message": "File successfully uploaded"})
+    resp = jsonify({"message": "New Customer Added"})
     resp.status_code = 201
     return resp
 
