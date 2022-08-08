@@ -1,16 +1,16 @@
-from src import app
+"""
+API Health
+"""
 from flask_api import status
+from src import app
 
-route = "/api/health"
 
-# @type: GET
-# @description: check if api is running
-# @access: public 
-# @url: /api/health/running 
+ROUTE = "/api/health"
 
-@app.route(route + "/running", methods=['get'])
-def healthCheck():
-    return {
-        "success": True,
-        "message": "Api is running"
-    }, status.HTTP_200_OK
+@app.route(ROUTE + "/running", methods=["get"])
+def health_check():
+    """
+    check if api is running
+    @url: /api/health/running
+    """
+    return {"success": True, "message": "Api is running"}, status.HTTP_200_OK
