@@ -15,8 +15,21 @@ def get_customer_by_bucket_name(bucket_name):
     for doc in docs:
         doc_id_list.append(doc.id)
     return doc_id_list
+
 def add_customer(customer_dict):
     """
     Add new customer
     """
     return db.collection("Customer").add(customer_dict)
+
+def get_customer_by_id(doc_id):
+    """
+    Get document by id
+    """
+    return db.collection("Customer").document(doc_id).get()
+
+def update_customer_by_id(doc_id,doc_dict):
+    """
+    Update document by id
+    """
+    return db.collection("Customer").document(doc_id).set(doc_dict)
