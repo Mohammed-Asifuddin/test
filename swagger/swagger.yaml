@@ -1,0 +1,527 @@
+swagger: "2.0"
+info:
+  version: "1.0.0"
+  title: "Beyond The Label"
+host: "localhost"
+basePath: "/btl"
+schemes:
+- "https"
+- "http"
+paths:
+  /customer:
+    post:
+      tags:
+      - "Customer"
+      consumes:
+      - "application/octet-stream"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Customer create request"
+        required: true
+        schema:
+          type: object
+          required:
+          - "customerName"
+          - "customerLogoFile"
+          properties:
+            customerId:
+              type: string
+              format: uuid
+            customerName:
+              type: string
+              format: string
+            customerLogoFile:
+              type: string
+              format: binary
+            customerIntentFile:
+              type: string
+              format: binary
+      responses:
+        "200":
+          description: "Customer created successfully"
+          schema:
+            type: object
+            properties:
+              customerId:
+                type: string
+                format: uuid
+              customerName:
+                type: string
+                format: string
+              customerLogoPath:
+                type: string
+              customerStatus:
+                type: boolean
+              customerTrainingStatus:
+                type: integer
+                format: int64
+        "405":
+          description: "Invalid input"
+    put:
+      tags:
+      - "Customer"
+      consumes:
+      - "application/octet-stream"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Customer update request"
+        required: true
+        schema:
+          type: object
+          required:
+          - "customerId"
+          properties:
+            customerId:
+              type: string
+              format: uuid
+            customerLogoFile:
+              type: string
+              format: binary
+            customerIntentFile:
+              type: string
+              format: binary
+      responses:
+        "200":
+          description: "Customer updated successfully"
+          schema:
+            type: object
+            properties:
+              customerId:
+                type: string
+                format: uuid
+              customerName:
+                type: string
+                format: string
+              customerLogoPath:
+                type: string
+              customerStatus:
+                type: boolean
+              customerTrainingStatus:
+                type: integer
+                format: int64
+        "405":
+          description: "Invalid input"
+    get:
+      tags:
+      - "Customer"
+      consumes:
+      - "application/octet-stream"
+      produces:
+      - "application/json"
+      responses:
+        "405":
+          description: "Invalid Request"
+        "200":
+          description: "Customer Details"
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                customerId:
+                  type: string
+                  format: uuid
+                customerName:
+                  type: string
+                  format: string
+                customerLogoPath:
+                  type: string
+                customerStatus:
+                  type: boolean
+                customerTrainingStatus:
+                  type: integer
+                  format: int64
+  /customer/{id}:
+    delete:
+      tags:
+      - "Customer"
+      consumes:
+      - "application/octet-stream"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "Customer id to delete"
+        required: true
+        type: string
+        format: uuid
+      responses:
+        "200":
+          description: "Customer deleted successfully"
+        "405":
+          description: "Invalid input"
+  /customer/{id}/{status}:
+    put:
+      tags:
+      - "Customer"
+      consumes:
+      - "application/octet-stream"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "Customer id to update"
+        required: true
+        type: string
+        format: uuid
+      - name: "status"
+        in: "path"
+        description: "Status to update"
+        required: true
+        type: boolean
+      responses:
+        "200":
+          description: "Customer status updated successfully"
+        "405":
+          description: "Invalid input"
+  /product:
+    post:
+      tags:
+      - "Product"
+      consumes:
+      - "application/octet-stream"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Product create request"
+        required: true
+        schema:
+          type: object
+          required:
+          - "productName"
+          - "productLabel"
+          - "customerId"
+          - "productDescription"
+          - "productVideo"
+          properties:
+            customerId:
+              type: string
+              format: uuid
+            productId:
+              type: string
+              format: uuid
+            productName:
+              type: string
+            productLabel:
+              type: string
+            productDescription:
+              type: string
+            productVideoFile:
+              type: string
+              format: binary
+            productIntentFile:
+              type: string
+              format: binary
+            productMetadata:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      Key:
+                        type: string
+                        format: string
+                      value:
+                        type: string
+                        format: string
+      responses:
+        "200":
+          description: "Product created successfully"
+          schema:
+            type: object
+            properties:
+              customerId:
+                type: string
+                format: uuid
+              productId:
+                type: string
+                format: uuid
+              productName:
+                type: string
+              productLabel:
+                type: string
+              productDescription:
+                type: string
+              productVideoPath:
+                type: string
+              productIntentPath:
+                type: string
+              productImageStatus:
+                type: boolean
+              productTrainingStatus:
+                type: integer
+                format: int64
+              productMetadata:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        Key:
+                          type: string
+                          format: string
+                        value:
+                          type: string
+                          format: string
+        "405":
+          description: "Invalid input"
+    put:
+      tags:
+      - "Product"
+      consumes:
+      - "application/octet-stream"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Product create request"
+        required: true
+        schema:
+          type: object
+          required:
+          - "productId"
+          properties:
+            customerId:
+              type: string
+              format: uuid
+            productId:
+              type: string
+              format: uuid
+            productName:
+              type: string
+            productLabel:
+              type: string
+            productDescription:
+              type: string
+            productVideoFile:
+              type: string
+            productIntentFile:
+              type: string
+            productImageStatus:
+                type: boolean
+            productTrainingStatus:
+              type: integer
+              format: int64
+            productMetadata:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      Key:
+                        type: string
+                        format: string
+                      value:
+                        type: string
+                        format: string
+      responses:
+        "200":
+          description: "Product created successfully"
+          schema:
+            type: object
+            properties:
+              customerId:
+                type: string
+                format: uuid
+              productId:
+                type: string
+                format: uuid
+              productName:
+                type: string
+              productLabel:
+                type: string
+              productDescription:
+                type: string
+              productVideoPath:
+                type: string
+              productIntentPath:
+                type: string
+              productImageStatus:
+                type: boolean
+              productTrainingStatus:
+                type: integer
+                format: int64
+              productMetadata:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        Key:
+                          type: string
+                          format: string
+                        value:
+                          type: string
+                          format: string
+        "405":
+          description: "Invalid input"
+    get:
+      tags:
+      - "Product"
+      consumes:
+      - "application/octet-stream"
+      produces:
+      - "application/json"
+      responses:
+        "405":
+          description: "Invalid input"
+        "200":
+          description: "Customer Details"
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                customerId:
+                  type: string
+                  format: uuid
+                productId:
+                  type: string
+                  format: uuid
+                productName:
+                  type: string
+                productLabel:
+                  type: string
+                productDescription:
+                  type: string
+                productVideoPath:
+                  type: string
+                productIntentPath:
+                  type: string
+                productImageStatus:
+                  type: boolean
+                productTrainingStatus:
+                  type: integer
+                  format: int64
+                productMetadata:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          Key:
+                            type: string
+                            format: string
+                          value:
+                            type: string
+                            format: string
+  /product/{id}:
+    delete:
+      tags:
+      - "Product"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "Product id to delete"
+        required: true
+        type: string
+        format: uuid
+      responses:
+        "405":
+          description: "Invalid input"
+  /user/search:
+    post:
+      tags:
+      - User
+      consumes:
+      - "application/octet-stream"
+      produces:
+      - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Customer update request"
+          required: true
+          schema:
+            type: object
+            required:
+            - "imageFile"
+            properties:
+              imageFile:
+                type: string
+                format: binary
+      responses:
+        "405":
+          description: "Invalid input"
+        "200":
+          description: "Invalid input"
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                productName:
+                  type: string
+                productLabel:
+                  type: string
+                productDescription:
+                  type: string
+                productScore:
+                  type: integer
+                  format: int64
+                productMetadata:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          Key:
+                            type: string
+                            format: string
+                          value:
+                            type: string
+                            format: string
+  /customer/intent/{id}:
+    get:
+      tags:
+      - Customer
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "customer id to intent"
+        required: true
+        type: string
+        format: uuid
+      responses:
+        "405":
+          description: "Invalid input"
+  /product/intent/{id}:
+    get:
+      tags:
+      - Product
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "Product id to intent"
+        required: true
+        type: string
+        format: uuid
+      responses:
+        "405":
+          description: "Invalid input"
+definitions:
+  ApiResponse:
+      type: "object"
+      properties:
+        code:
+          type: "integer"
+          format: "int32"
+        message:
+          type: "string"
