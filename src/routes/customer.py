@@ -2,6 +2,7 @@
 Customer API service
 """
 import os
+import string
 from flask_api import status
 from flask import jsonify, request
 from src import app
@@ -11,6 +12,27 @@ from src.helpers.gCloud import firestore_helper as fh
 from src.helpers.gCloud import dialogflow as df
 
 ROUTE = "/customer"
+
+
+def customer_id_validation(customer_id):
+    """
+    Update status common code
+    """
+    if customer_id.strip() == "":
+        resp = jsonify({"message": "customer_id is neither empty nor blank"})
+        resp.status_code = 400
+        return resp
+    docs = fh.get_customer_by_id(customer_id)
+    if not docs.exists:
+        resp = jsonify({"message": "No data found with given customer_id"})
+        resp.status_code = 400
+        return resp
+    doc = docs.to_dict()
+    if doc["is_deleted"]:
+        resp = jsonify({"message": "Customer already deleted."})
+        resp.status_code = 400
+        return resp
+    return doc
 
 
 @app.route(ROUTE, methods=["POST"])
@@ -70,7 +92,7 @@ def create_customer():
     doc = fh.add_customer(customer_dict=customer_dict)
     customer_dict["customer_id"] = doc[-1].id
     df.create_agent(os.getenv("PROJECT_ID", "retail-btl-dev"), name)
-    #TODO : send pubsub notification to create Intent
+    # TODO : send pubsub notification to create Intent
     resp = jsonify({"message": "Customer created successfully", "data": customer_dict})
     return resp, status.HTTP_201_CREATED
 
@@ -80,21 +102,14 @@ def update_customer():
     """
     update a customer
     """
+    if "current_customer_id" in request.form.keys():
+        resp = jsonify({"message": "customer_id is mandatory"})
+        resp.status_code = 400
+        return resp
     customer_id = request.form["customer_id"]
-    if customer_id.strip() == "":
-        resp = jsonify({"message": "customer_id is neither empty nor blank"})
-        resp.status_code = 400
-        return resp
-    docs = fh.get_customer_by_id(customer_id)
-    if not docs.exists:
-        resp = jsonify({"message": "No data found with given customer_id"})
-        resp.status_code = 400
-        return resp
-    doc = docs.to_dict()
-    if doc["is_deleted"]:
-        resp = jsonify({"message": "Customer already deleted."})
-        resp.status_code = 400
-        return resp
+    doc = customer_id_validation(customer_id=customer_id)
+    if not isinstance(doc, (dict)):
+        return doc
     bucket_name = doc["bucket_name"]
     doc["customer_id"] = customer_id
     bucket = sh.get_bucket_object_by_name(bucket_name)
@@ -133,7 +148,7 @@ def update_customer():
         doc_updated = True
     if doc_updated:
         fh.update_customer_by_id(doc_id=customer_id, doc_dict=doc)
-    #TODO : send pubsub notification to create Intent
+    # TODO : send pubsub notification to create Intent
     resp = jsonify({"message": "Customer updated", "data": doc})
     return resp, status.HTTP_201_CREATED
 
@@ -158,21 +173,9 @@ def delete_customer(customer_id):
     """
     Delete customers data
     """
-    customer_id = request.view_args["customer_id"]
-    if customer_id.strip() == "":
-        resp = jsonify({"message": "customer_id is neither empty nor blank"})
-        resp.status_code = 400
-        return resp
-    docs = fh.get_customer_by_id(customer_id)
-    if not docs.exists:
-        resp = jsonify({"message": "No data found with given customer_id"})
-        resp.status_code = 400
-        return resp
-    doc = docs.to_dict()
-    if doc["is_deleted"]:
-        resp = jsonify({"message": "Customer already deleted."})
-        resp.status_code = 400
-        return resp
+    doc = customer_id_validation(customer_id=customer_id)
+    if not isinstance(doc, (dict)):
+        return doc
     doc["is_deleted"] = True
     fh.update_customer_by_id(doc_id=customer_id, doc_dict=doc)
     resp = jsonify({"message": "Customer deleted successfully"})
@@ -180,15 +183,29 @@ def delete_customer(customer_id):
     return resp
 
 
-@app.route(ROUTE + "/<customer_id>/<customer_status>", methods=["PUT"])
-def update_customer_status(customer_id, customer_status):
+@app.route(ROUTE + "/status", methods=["PUT"])
+def update_customer_status():
     """
-    Delete customers data
+    Update customers status
     """
-    customer_id = request.view_args["customer_id"]
-    customer_status = request.view_args["customer_status"]
-    print(customer_id)
-    print(customer_status)
+    current_customer_id: string
+    current_customer_doc: any
+    new_customer_id: string
+    new_customer_doc: any
+    if "current_customer_id" in request.form.keys():
+        current_customer_id = request.form["current_customer_id"]
+        current_customer_doc = customer_id_validation(customer_id=current_customer_id)
+        if not isinstance(current_customer_doc, (dict)):
+            return current_customer_doc
+        current_customer_doc["status"] = False
+    if "new_customer_id" in request.form.keys():
+        new_customer_id = request.form["new_customer_id"]
+        new_customer_doc = customer_id_validation(customer_id=new_customer_id)
+        if not isinstance(new_customer_doc, (dict)):
+            return new_customer_doc
+        new_customer_doc["status"] = True
+    fh.update_customer_by_id(doc_id=current_customer_id, doc_dict=current_customer_doc)
+    fh.update_customer_by_id(doc_id=new_customer_id, doc_dict=new_customer_doc)
     resp = jsonify({"message": "Customer status changed successfully"})
     resp.status_code = 200
     return resp
