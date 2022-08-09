@@ -33,3 +33,9 @@ def update_customer_by_id(doc_id,doc_dict):
     Update document by id
     """
     return db.collection("Customer").document(doc_id).set(doc_dict)
+
+def get_all_customers():
+    """
+    Return All customers
+    """
+    return db.collection("Customer").where("is_deleted", "==", False).stream()

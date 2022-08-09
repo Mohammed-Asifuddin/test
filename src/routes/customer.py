@@ -1,13 +1,14 @@
 """
 Customer API service
 """
-# import os
+import os
 from flask_api import status
 from flask import jsonify, request
 from src import app
 from src.helpers import file_validator as fv
 from src.helpers.gCloud import storage_handler as sh
 from src.helpers.gCloud import firestore_helper as fh
+from src.helpers.gCloud import dialogflow as df
 
 ROUTE = "/customer"
 
@@ -65,12 +66,11 @@ def create_customer():
     customer_dict["intent_file_path"] = intent_public_url
     customer_dict["status"] = False
     customer_dict["training_status"] = 0
+    customer_dict["is_deleted"] = False
     doc = fh.add_customer(customer_dict=customer_dict)
     customer_dict["customer_id"] = doc[-1].id
-    # TODO
-    # Create a dialog flow agent with customer name : pubsub
-    # if we have intent_file we have to trigger pubsub topic to create a intent,
-    # we will share customer document id
+    df.create_agent(os.getenv("PROJECT_ID", "retail-btl-dev"), name)
+    #TODO : send pubsub notification to create Intent
     resp = jsonify({"message": "Customer created successfully", "data": customer_dict})
     return resp, status.HTTP_201_CREATED
 
@@ -91,6 +91,10 @@ def update_customer():
         resp.status_code = 400
         return resp
     doc = docs.to_dict()
+    if doc["is_deleted"]:
+        resp = jsonify({"message": "Customer already deleted."})
+        resp.status_code = 400
+        return resp
     bucket_name = doc["bucket_name"]
     doc["customer_id"] = customer_id
     bucket = sh.get_bucket_object_by_name(bucket_name)
@@ -129,10 +133,7 @@ def update_customer():
         doc_updated = True
     if doc_updated:
         fh.update_customer_by_id(doc_id=customer_id, doc_dict=doc)
-    # TODO
-    # Create a dialog flow agent with customer name : pubsub
-    # if we have intent_file we have to trigger pubsub topic to create a intent,
-    # we will share customer document id
+    #TODO : send pubsub notification to create Intent
     resp = jsonify({"message": "Customer updated", "data": doc})
     return resp, status.HTTP_201_CREATED
 
@@ -143,34 +144,37 @@ def get_all_customer():
     Get all customers data
     """
     list_data = []
-    all_customer_dict = {
-        "customerId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-        "customerName": "string",
-        "customerLogoPath": "string",
-        "customerStatus": True,
-        "customerTrainingStatus": 0,
-    }
-    all_customer_dict2 = {
-        "customerId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-        "customerName": "string",
-        "customerLogoPath": "string",
-        "customerStatus": True,
-        "customerTrainingStatus": 0,
-    }
-    list_data.append(all_customer_dict)
-    list_data.append(all_customer_dict2)
+    docs = fh.get_all_customers()
+    for doc in docs:
+        data = doc.to_dict()
+        data["customer_id"] = doc.id
+        list_data.append(data)
     resp = jsonify(list_data)
-    resp.status_code = 200
-    return resp
+    return resp, status.HTTP_200_OK
 
 
-@app.route(ROUTE + "/<customer_id>", methods=["GET"])
+@app.route(ROUTE + "/<customer_id>", methods=["DELETE"])
 def delete_customer(customer_id):
     """
     Delete customers data
     """
     customer_id = request.view_args["customer_id"]
-    print(customer_id)
+    if customer_id.strip() == "":
+        resp = jsonify({"message": "customer_id is neither empty nor blank"})
+        resp.status_code = 400
+        return resp
+    docs = fh.get_customer_by_id(customer_id)
+    if not docs.exists:
+        resp = jsonify({"message": "No data found with given customer_id"})
+        resp.status_code = 400
+        return resp
+    doc = docs.to_dict()
+    if doc["is_deleted"]:
+        resp = jsonify({"message": "Customer already deleted."})
+        resp.status_code = 400
+        return resp
+    doc["is_deleted"] = True
+    fh.update_customer_by_id(doc_id=customer_id, doc_dict=doc)
     resp = jsonify({"message": "Customer deleted successfully"})
     resp.status_code = 200
     return resp

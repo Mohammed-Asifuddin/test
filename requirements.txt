@@ -13,6 +13,7 @@ google-api-python-client==2.55.0
 google-auth==2.9.1
 google-auth-httplib2==0.1.0
 google-cloud-core==2.3.2
+google-cloud-dialogflow-cx==1.13.0
 google-cloud-firestore==2.6.0
 google-cloud-storage==2.5.0
 google-cloud-vision==3.0.0
