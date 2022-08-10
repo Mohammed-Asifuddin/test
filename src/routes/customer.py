@@ -2,7 +2,6 @@
 Customer API service
 """
 import os
-import string
 from flask_api import status
 from flask import jsonify, request
 from src import app
@@ -12,6 +11,60 @@ from src.helpers.gCloud import firestore_helper as fh
 from src.helpers.gCloud import dialogflow as df
 
 ROUTE = "/customer"
+
+
+def validate_files_as_mandatory(files, file_type):
+    """
+    File validator as mandatory
+    """
+    if file_type not in files:
+        resp = jsonify({"message": "{file_type} is mandatory."})
+        resp.status_code = 400
+        return resp
+    file = files[file_type]
+    if file.filename == "":
+        resp = jsonify({"message": "No {file_type} part in the request"})
+        resp.status_code = 400
+        return resp
+    return ""
+
+
+def validate_files_as_optional(files, file_type):
+    """
+    File validator as optional
+    """
+    if (file_type in files) and (files[file_type]):
+        if (
+            not fv.allowed_image_file(files[file_type].filename)
+            and file_type == "logo_file"
+        ):
+            resp = jsonify(
+                {"message": "Allowed Logo file types are png, jpg, jpeg, gif"}
+            )
+            resp.status_code = 400
+            return resp
+        if (
+            not fv.allowed_intent_file(files[file_type].filename)
+            and file_type == "intent_file"
+        ):
+            resp = jsonify({"message": "Allowed intent file types are CSV"})
+            resp.status_code = 400
+            return resp
+    return ""
+
+
+def is_duplicate_customer(bucket_name):
+    """
+    Validate is customer is duplicate.
+    """
+    if len(bucket_name) < 3:
+        bucket_name = bucket_name + "000"
+    doc_id_list = fh.get_customer_by_bucket_name(bucket_name)
+    if len(doc_id_list) != 0:
+        resp = jsonify({"message": "Customer Exists"})
+        resp.status_code = 400
+        return resp
+    return ""
 
 
 def customer_id_validation(customer_id):
@@ -40,55 +93,43 @@ def create_customer():
     """
     Create a new customer
     """
+    if "name" not in request.form.keys():
+        resp = jsonify({"message": "Name is mandatory fields"})
+        resp.status_code = 400
+        return resp
     name = request.form["name"]
     if name.strip() == "":
         resp = jsonify({"message": "Name is neither empty nor blank"})
         resp.status_code = 400
         return resp
-    if "logo_file" not in request.files:
-        resp = jsonify({"message": "Logo is mandatory."})
-        resp.status_code = 400
-        return resp
-    logo_file = request.files["logo_file"]
-    if logo_file.filename == "":
-        resp = jsonify({"message": "No Logo file part in the request"})
-        resp.status_code = 400
-        return resp
-    if logo_file and not fv.allowed_image_file(logo_file.filename):
-        resp = jsonify({"message": "Allowed Logo file types are png, jpg, jpeg, gif"})
-        resp.status_code = 400
-        return resp
     bucket_name = "".join(char for char in name if char.isalnum()).lower()
-    if len(bucket_name) < 3:
-        bucket_name = bucket_name + "000"
-    doc_id_list = fh.get_customer_by_bucket_name(bucket_name)
-    if len(doc_id_list) != 0:
-        resp = jsonify({"message": "Customer Exists"})
-        resp.status_code = 400
-        return resp
-    bucket = sh.create_bucket(bucket_name)
-    logo_public_url = sh.upload_logo(bucket=bucket, logo_file=logo_file)
-    intent_file = ""
-    intent_public_url = ""
-    if "intent_file" in request.files:
-        intent_file = request.files["intent_file"]
-        if intent_file.filename == "":
-            resp = jsonify({"message": "No Intent file part in the request"})
-            resp.status_code = 400
-            return resp
-        if intent_file and not fv.allowed_intent_file(intent_file.filename):
-            resp = jsonify({"message": "Allowed Intent file types are csv"})
-            resp.status_code = 400
-            return resp
-        intent_public_url = sh.upload_intent(bucket=bucket, intent_file=intent_file)
+    customer_duplicate = is_duplicate_customer(bucket_name=bucket_name)
+    bucket = ""
+    if customer_duplicate == "":
+        bucket = sh.create_bucket(bucket_name)
+    else:
+        return customer_duplicate
     customer_dict = {}
     customer_dict["name"] = name
     customer_dict["bucket_name"] = bucket_name
-    customer_dict["logo_file_path"] = logo_public_url
-    customer_dict["intent_file_path"] = intent_public_url
     customer_dict["status"] = False
     customer_dict["training_status"] = 0
     customer_dict["is_deleted"] = False
+    files = request.files
+    logo_resp = validate_files_as_mandatory(files=files, file_type="logo_file")
+    if logo_resp != "":
+        return logo_resp
+    else:
+        logo_file = files["logo_file"]
+        logo_public_url = sh.upload_logo(bucket=bucket, logo_file=logo_file)
+        customer_dict["logo_file_path"] = logo_public_url
+    intent_resp = validate_files_as_optional(files=files, file_type="intent_file")
+    if intent_resp == "":
+        intent_file = files["intent_file"]
+        intent_public_url = sh.upload_intent(bucket=bucket, intent_file=intent_file)
+        customer_dict["intent_file_path"] = intent_public_url
+    else:
+        return intent_resp
     doc = fh.add_customer(customer_dict=customer_dict)
     customer_dict["customer_id"] = doc[-1].id
     df.create_agent(os.getenv("PROJECT_ID", "retail-btl-dev"), name)
@@ -110,47 +151,36 @@ def update_customer():
     doc = customer_id_validation(customer_id=customer_id)
     if not isinstance(doc, (dict)):
         return doc
-    bucket_name = doc["bucket_name"]
-    doc["customer_id"] = customer_id
-    bucket = sh.get_bucket_object_by_name(bucket_name)
-    logo_file = ""
-    logo_public_url = ""
-    if "logo_file" in request.files:
-        logo_file = request.files["logo_file"]
-        if logo_file.filename == "":
-            resp = jsonify({"message": "No Logo file part in the request"})
-            resp.status_code = 400
-            return resp
-        if logo_file and not fv.allowed_image_file(logo_file.filename):
-            resp = jsonify({"message": "Allowed Logo file types are csv"})
-            resp.status_code = 400
-            return resp
-        logo_public_url = sh.upload_logo(bucket=bucket, logo_file=logo_file)
-    intent_file = ""
-    intent_public_url = ""
-    if "intent_file" in request.files:
-        intent_file = request.files["intent_file"]
-        if intent_file.filename == "":
-            resp = jsonify({"message": "No Intent file part in the request"})
-            resp.status_code = 400
-            return resp
-        if intent_file and not fv.allowed_intent_file(intent_file.filename):
-            resp = jsonify({"message": "Allowed Intent file types are csv"})
-            resp.status_code = 400
-            return resp
-        intent_public_url = sh.upload_intent(bucket=bucket, intent_file=intent_file)
-    doc_updated = False
-    if logo_public_url != "":
-        doc["logo_file_path"] = logo_public_url
-        doc_updated = True
-    if intent_public_url != "":
-        doc["intent_file_path"] = intent_public_url
-        doc_updated = True
-    if doc_updated:
+    files = request.files
+    bucket = sh.get_bucket_object_by_name(doc["bucket_name"])
+    logo_resp = validate_files_as_optional(files=files, file_type="logo_file")
+    print("logo response : " + str(logo_resp))
+    is_updated = False
+    if logo_resp == "":
+        print("logo response : " + str(logo_resp))
+        logo_file = files["logo_file"]
+        if logo_file:
+            logo_public_url = sh.upload_logo(bucket=bucket, logo_file=logo_file)
+            doc["logo_file_path"] = logo_public_url
+            is_updated = True
+    else:
+        return logo_resp
+    intent_resp = validate_files_as_optional(files=files, file_type="intent_file")
+    print("intent response : " + str(intent_resp))
+    if intent_resp == "":
+        print("intent response : " + str(logo_resp))
+        intent_file = files["intent_file"]
+        if intent_file:
+            intent_public_url = sh.upload_logo(bucket=bucket, logo_file=intent_file)
+            doc["intent_file_path"] = intent_public_url
+            is_updated = True
+    else:
+        return intent_resp
+    if is_updated:
         fh.update_customer_by_id(doc_id=customer_id, doc_dict=doc)
     # TODO : send pubsub notification to create Intent
     resp = jsonify({"message": "Customer updated", "data": doc})
-    return resp, status.HTTP_201_CREATED
+    return resp, status.HTTP_200_OK
 
 
 @app.route(ROUTE, methods=["GET"])
@@ -188,24 +218,35 @@ def update_customer_status():
     """
     Update customers status
     """
-    current_customer_id: string
+    current_customer_id: any
     current_customer_doc: any
-    new_customer_id: string
+    new_customer_id: any
     new_customer_doc: any
-    if "current_customer_id" in request.form.keys():
+    if (
+        "current_customer_id" in request.form.keys()
+        and request.form["current_customer_id"]
+    ):
         current_customer_id = request.form["current_customer_id"]
         current_customer_doc = customer_id_validation(customer_id=current_customer_id)
         if not isinstance(current_customer_doc, (dict)):
             return current_customer_doc
         current_customer_doc["status"] = False
-    if "new_customer_id" in request.form.keys():
+    else:
+        current_customer_doc = {}
+    if "new_customer_id" in request.form.keys() and request.form["new_customer_id"]:
         new_customer_id = request.form["new_customer_id"]
         new_customer_doc = customer_id_validation(customer_id=new_customer_id)
         if not isinstance(new_customer_doc, (dict)):
             return new_customer_doc
         new_customer_doc["status"] = True
-    fh.update_customer_by_id(doc_id=current_customer_id, doc_dict=current_customer_doc)
-    fh.update_customer_by_id(doc_id=new_customer_id, doc_dict=new_customer_doc)
+    else:
+        new_customer_doc = {}
+    if len(current_customer_doc.keys()) != 0:
+        fh.update_customer_by_id(
+            doc_id=current_customer_id, doc_dict=current_customer_doc
+        )
+    if len(new_customer_doc.keys()) != 0:
+        fh.update_customer_by_id(doc_id=new_customer_id, doc_dict=new_customer_doc)
     resp = jsonify({"message": "Customer status changed successfully"})
     resp.status_code = 200
     return resp
