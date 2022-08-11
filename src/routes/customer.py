@@ -143,7 +143,7 @@ def update_customer():
     """
     update a customer
     """
-    if "current_customer_id" in request.form.keys():
+    if "customer_id" in request.form.keys():
         resp = jsonify({"message": "customer_id is mandatory"})
         resp.status_code = 400
         return resp
@@ -154,10 +154,8 @@ def update_customer():
     files = request.files
     bucket = sh.get_bucket_object_by_name(doc["bucket_name"])
     logo_resp = validate_files_as_optional(files=files, file_type="logo_file")
-    print("logo response : " + str(logo_resp))
     is_updated = False
     if logo_resp == "":
-        print("logo response : " + str(logo_resp))
         logo_file = files["logo_file"]
         if logo_file:
             logo_public_url = sh.upload_logo(bucket=bucket, logo_file=logo_file)
@@ -166,9 +164,7 @@ def update_customer():
     else:
         return logo_resp
     intent_resp = validate_files_as_optional(files=files, file_type="intent_file")
-    print("intent response : " + str(intent_resp))
     if intent_resp == "":
-        print("intent response : " + str(logo_resp))
         intent_file = files["intent_file"]
         if intent_file:
             intent_public_url = sh.upload_logo(bucket=bucket, logo_file=intent_file)
