@@ -24,19 +24,16 @@ paths:
         schema:
           type: object
           required:
-          - "customerName"
-          - "customerLogoFile"
+          - "name"
+          - "logo_file_path"
           properties:
-            customerId:
-              type: string
-              format: uuid
-            customerName:
+            name:
               type: string
               format: string
-            customerLogoFile:
+            logo_file_path:
               type: string
               format: binary
-            customerIntentFile:
+            intent_file_path:
               type: string
               format: binary
       responses:
@@ -45,19 +42,32 @@ paths:
           schema:
             type: object
             properties:
-              customerId:
-                type: string
-                format: uuid
-              customerName:
+              message:
                 type: string
                 format: string
-              customerLogoPath:
-                type: string
-              customerStatus:
-                type: boolean
-              customerTrainingStatus:
-                type: integer
-                format: int64
+              data:
+                type: object
+                properties:
+                  customer_id:
+                    type: string
+                    format: uuid
+                  name:
+                    type: string
+                    format: string
+                  logo_file_path:
+                    type: string
+                  intent_file_path:
+                    type: string
+                  status:
+                    type: boolean
+                  training_status:
+                    type: integer
+                    format: int64
+                  bucket_name:
+                    type: string
+                    format: string
+                  is_deleted:
+                    type: boolean
         "405":
           description: "Invalid input"
     put:
@@ -75,15 +85,15 @@ paths:
         schema:
           type: object
           required:
-          - "customerId"
+          - "customer_id"
           properties:
-            customerId:
+            customer_id:
               type: string
               format: uuid
-            customerLogoFile:
+            logo_file_path:
               type: string
               format: binary
-            customerIntentFile:
+            intent_file_path:
               type: string
               format: binary
       responses:
@@ -92,19 +102,32 @@ paths:
           schema:
             type: object
             properties:
-              customerId:
-                type: string
-                format: uuid
-              customerName:
+              message:
                 type: string
                 format: string
-              customerLogoPath:
-                type: string
-              customerStatus:
-                type: boolean
-              customerTrainingStatus:
-                type: integer
-                format: int64
+              data:
+                type: object
+                properties:
+                  customer_id:
+                    type: string
+                    format: uuid
+                  name:
+                    type: string
+                    format: string
+                  logo_file_path:
+                    type: string
+                  intent_file_path:
+                    type: string
+                  status:
+                    type: boolean
+                  training_status:
+                    type: integer
+                    format: int64
+                  bucket_name:
+                    type: string
+                    format: string
+                  is_deleted:
+                    type: boolean
         "405":
           description: "Invalid input"
     get:
@@ -124,19 +147,26 @@ paths:
             items:
               type: object
               properties:
-                customerId:
+                customer_id:
                   type: string
                   format: uuid
-                customerName:
+                name:
                   type: string
                   format: string
-                customerLogoPath:
+                logo_file_path:
                   type: string
-                customerStatus:
+                intent_file_path:
+                  type: string
+                status:
                   type: boolean
-                customerTrainingStatus:
+                training_status:
                   type: integer
                   format: int64
+                bucket_name:
+                  type: string
+                  format: string
+                is_deleted:
+                  type: boolean
   /customer/{id}:
     delete:
       tags:
@@ -157,7 +187,7 @@ paths:
           description: "Customer deleted successfully"
         "405":
           description: "Invalid input"
-  /customer/{id}/{status}:
+  /customer/status:
     put:
       tags:
       - "Customer"
@@ -166,20 +196,22 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - name: "id"
-        in: "path"
-        description: "Customer id to update"
+      - in: "body"
+        name: "body"
+        description: "Customer status update request"
         required: true
-        type: string
-        format: uuid
-      - name: "status"
-        in: "path"
-        description: "Status to update"
-        required: true
-        type: boolean
+        schema:
+          type: object
+          properties:
+            current_customer_id:
+              type: string
+              format: uuid
+            new_customer_id:
+              type: string
+              format: uuid
       responses:
         "200":
-          description: "Customer status updated successfully"
+          description: "Customer status changed successfully"
         "405":
           description: "Invalid input"
   /product:
@@ -480,8 +512,10 @@ paths:
                           value:
                             type: string
                             format: string
-  /customer/intent/{id}:
+  /customer/{id}/intent:
     get:
+      summary: Returns all intents for a specific customer
+      description: This can be used to display all intents in a list which can then be cycled through to view particular intents. Filter intents by customer ID using CSV.
       tags:
       - Customer
       consumes:
@@ -491,15 +525,55 @@ paths:
       parameters:
       - name: "id"
         in: "path"
-        description: "customer id to intent"
+        description: "Customer id for intents"
         required: true
         type: string
-        format: uuid
       responses:
+        "200":
+          description: "All intents for this customer"
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Intent'
         "405":
           description: "Invalid input"
-  /product/intent/{id}:
+    post:
+      summary: Creates/Updates/Deletes intents mentioned in the CSV
+      description: This will be used every time the CSV is updated. It'll create/update/delete intents mentioned in the CSV depending on the Action column
+      tags:
+      - Customer
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "Customer id for intents"
+        required: true
+        type: string
+      - name: "filePath"
+        in: "body"
+        schema:
+          type: object
+          required:
+            - filePath
+          properties:
+            filePath:
+              type: string
+      responses:
+        "200":
+          description: "Successfully added intents for the customer"
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Intent'
+        "405":
+          description: "Invalid input"
+  /product/{id}/intent:
     get:
+      summary: Returns all intents for a specific product
+      description: This can be used to display all intents in a list which can then be cycled through to view particular intents. Filter intents by product ID using CSV.
       tags:
       - Product
       consumes:
@@ -509,11 +583,49 @@ paths:
       parameters:
       - name: "id"
         in: "path"
-        description: "Product id to intent"
+        description: "Product id for intents"
         required: true
         type: string
-        format: uuid
       responses:
+        "200":
+          description: "All intents for this product"
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Intent'
+        "405":
+          description: "Invalid input"
+    post:
+      summary: Creates/Updates/Deletes intents mentioned in the CSV
+      description: This will be used every time the CSV is updated. It'll create/update/delete intents mentioned in the CSV depending on the Action column
+      tags:
+      - Product
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "Product id for intents"
+        required: true
+        type: string
+      - name: "filePath"
+        in: "body"
+        schema:
+          type: object
+          required:
+            - filePath
+          properties:
+            filePath:
+              type: string
+      responses:
+        "200":
+          description: "Successfully added intents for the product"
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Intent'
         "405":
           description: "Invalid input"
 definitions:
@@ -525,3 +637,57 @@ definitions:
           format: "int32"
         message:
           type: "string"
+  Part:
+    type: "object"
+    properties:
+      text:
+        type: "string"
+      parameterId:
+        type: "string"
+  TrainingPhrase:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+      parts:
+        type: "array"
+        items:
+          $ref: '#/definitions/Part'
+      repeatCount:
+        type: "integer"
+  Parameter:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+      entityType:
+        type: "string"
+      isList:
+        type: "boolean"
+      redact:
+        type: "boolean"
+  Intent:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      displayName:
+        type: "string"
+      trainingPhrases:
+        type: array
+        items:
+          $ref: '#/definitions/TrainingPhrase'
+      parameters:
+        type: array
+        items:
+          $ref: '#/definitions/Parameter'
+      priority:
+        type: "integer"
+      isFallback:
+        type: "boolean"
+      labels:
+        type: "object"
+        additionalProperties:
+          type: "string"
+      description:
+        type: "string"
