@@ -143,7 +143,7 @@ def update_customer():
     """
     update a customer
     """
-    if "customer_id" in request.form.keys():
+    if "customer_id" not in request.form.keys():
         resp = jsonify({"message": "customer_id is mandatory"})
         resp.status_code = 400
         return resp
