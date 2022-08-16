@@ -2,6 +2,7 @@
 Customer API service
 """
 import os
+from flask_cors import cross_origin
 from flask_api import status
 from flask import jsonify, request
 from src import app
