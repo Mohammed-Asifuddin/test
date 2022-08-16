@@ -26,7 +26,7 @@ def upload_logo(bucket, logo_file):
     """
     timestamp = str(int(time.time())).split('.', maxsplit=1)[0]
     timestamp = timestamp + "_"
-    logo_blob = bucket.blob("logo/"+timestamp+logo_file.filename)
+    logo_blob = bucket.blob('/logo/'+timestamp+logo_file.filename)
     logo_blob.upload_from_string(logo_file.read(), content_type=logo_file.content_type)
     return logo_blob.public_url
 

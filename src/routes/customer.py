@@ -18,12 +18,16 @@ def validate_files_as_mandatory(files, file_type):
     File validator as mandatory
     """
     if file_type not in files:
-        resp = jsonify({"message": "{file_type} is mandatory."})
+        resp = jsonify({"message": file_type + " is mandatory."})
         resp.status_code = 400
         return resp
     file = files[file_type]
     if file.filename == "":
-        resp = jsonify({"message": "No {file_type} part in the request"})
+        resp = jsonify({"message": "No " + file_type + " part in the request"})
+        resp.status_code = 400
+        return resp
+    if not fv.allowed_image_file(file.filename):
+        resp = jsonify({"message": "Allowed Logo file types are png, jpg, jpeg, gif"})
         resp.status_code = 400
         return resp
     return ""
@@ -34,8 +38,9 @@ def validate_files_as_optional(files, file_type):
     File validator as optional
     """
     if (file_type in files) and (files[file_type]):
+        file = files[file_type]
         if (
-            not fv.allowed_image_file(files[file_type].filename)
+            not fv.allowed_image_file(file.filename)
             and file_type == "logo_file"
         ):
             resp = jsonify(
@@ -44,7 +49,7 @@ def validate_files_as_optional(files, file_type):
             resp.status_code = 400
             return resp
         if (
-            not fv.allowed_intent_file(files[file_type].filename)
+            not fv.allowed_intent_file(file.filename)
             and file_type == "intent_file"
         ):
             resp = jsonify({"message": "Allowed intent file types are CSV"})
@@ -60,11 +65,11 @@ def is_duplicate_customer(bucket_name):
     if len(bucket_name) < 3:
         bucket_name = bucket_name + "000"
     doc_id_list = fh.get_customer_by_bucket_name(bucket_name)
-    if len(doc_id_list) != 0:
-        resp = jsonify({"message": "Customer Exists"})
-        resp.status_code = 400
-        return resp
-    return ""
+    if len(doc_id_list) == 0:
+        return len(doc_id_list)
+    resp = jsonify({"message": "Customer Exists"})
+    resp.status_code = 400
+    return resp
 
 
 def customer_id_validation(customer_id):
@@ -104,32 +109,30 @@ def create_customer():
         return resp
     bucket_name = "".join(char for char in name if char.isalnum()).lower()
     customer_duplicate = is_duplicate_customer(bucket_name=bucket_name)
+    files = request.files
+    logo_resp = validate_files_as_mandatory(files=files, file_type="logo_file")
+    intent_resp = validate_files_as_optional(files=files, file_type="intent_file")
+    if logo_resp != "":
+        return logo_resp
+    if intent_resp != "":
+        return intent_resp
     bucket = ""
-    if customer_duplicate == "":
-        bucket = sh.create_bucket(bucket_name)
-    else:
-        return customer_duplicate
     customer_dict = {}
     customer_dict["name"] = name
     customer_dict["bucket_name"] = bucket_name
     customer_dict["status"] = False
     customer_dict["training_status"] = 0
     customer_dict["is_deleted"] = False
-    files = request.files
-    logo_resp = validate_files_as_mandatory(files=files, file_type="logo_file")
-    if logo_resp != "":
-        return logo_resp
-    else:
+    if customer_duplicate == 0:
+        bucket = sh.create_bucket(bucket_name)
         logo_file = files["logo_file"]
         logo_public_url = sh.upload_logo(bucket=bucket, logo_file=logo_file)
         customer_dict["logo_file_path"] = logo_public_url
-    intent_resp = validate_files_as_optional(files=files, file_type="intent_file")
-    if intent_resp == "":
         intent_file = files["intent_file"]
         intent_public_url = sh.upload_intent(bucket=bucket, intent_file=intent_file)
         customer_dict["intent_file_path"] = intent_public_url
     else:
-        return intent_resp
+        return customer_duplicate
     doc = fh.add_customer(customer_dict=customer_dict)
     customer_dict["customer_id"] = doc[-1].id
     df.create_agent(os.getenv("PROJECT_ID", "retail-btl-dev"), name)
