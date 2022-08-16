@@ -170,7 +170,7 @@ def update_customer():
     if intent_resp == "":
         intent_file = files["intent_file"]
         if intent_file:
-            intent_public_url = sh.upload_logo(bucket=bucket, logo_file=intent_file)
+            intent_public_url = sh.upload_intent(bucket=bucket, logo_file=intent_file)
             doc["intent_file_path"] = intent_public_url
             is_updated = True
     else:
