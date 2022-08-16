@@ -94,6 +94,7 @@ def customer_id_validation(customer_id):
 
 
 @app.route(ROUTE, methods=["POST"])
+@cross_origin()
 def create_customer():
     """
     Create a new customer
@@ -142,6 +143,7 @@ def create_customer():
 
 
 @app.route(ROUTE, methods=["PUT"])
+@cross_origin()
 def update_customer():
     """
     update a customer
