@@ -98,10 +98,6 @@ def create_customer():
     """
     Create a new customer
     """
-    print('********************************************')
-    print(request.files['logo_file_path'])
-    print(request.files['intent_file_path'])
-    print('********************************************')
     if "name" not in request.form.keys():
         resp = jsonify({"message": "Name is mandatory fields"})
         resp.status_code = 400
@@ -174,7 +170,7 @@ def update_customer():
     if intent_resp == "":
         intent_file = files["intent_file_path"]
         if intent_file:
-            intent_public_url = sh.upload_intent(bucket=bucket, logo_file=intent_file)
+            intent_public_url = sh.upload_intent(bucket=bucket, intent_file=intent_file)
             doc["intent_file_path"] = intent_public_url
             is_updated = True
     else:
