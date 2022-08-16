@@ -41,7 +41,7 @@ def validate_files_as_optional(files, file_type):
         file = files[file_type]
         if (
             not fv.allowed_image_file(file.filename)
-            and file_type == "logo_file"
+            and file_type == "logo_file_path"
         ):
             resp = jsonify(
                 {"message": "Allowed Logo file types are png, jpg, jpeg, gif"}
@@ -50,7 +50,7 @@ def validate_files_as_optional(files, file_type):
             return resp
         if (
             not fv.allowed_intent_file(file.filename)
-            and file_type == "intent_file"
+            and file_type == "intent_file_path"
         ):
             resp = jsonify({"message": "Allowed intent file types are CSV"})
             resp.status_code = 400
@@ -98,6 +98,10 @@ def create_customer():
     """
     Create a new customer
     """
+    print('********************************************')
+    print(request.files['logo_file_path'])
+    print(request.files['intent_file_path'])
+    print('********************************************')
     if "name" not in request.form.keys():
         resp = jsonify({"message": "Name is mandatory fields"})
         resp.status_code = 400
@@ -110,8 +114,8 @@ def create_customer():
     bucket_name = "".join(char for char in name if char.isalnum()).lower()
     customer_duplicate = is_duplicate_customer(bucket_name=bucket_name)
     files = request.files
-    logo_resp = validate_files_as_mandatory(files=files, file_type="logo_file")
-    intent_resp = validate_files_as_optional(files=files, file_type="intent_file")
+    logo_resp = validate_files_as_mandatory(files=files, file_type="logo_file_path")
+    intent_resp = validate_files_as_optional(files=files, file_type="intent_file_path")
     if logo_resp != "":
         return logo_resp
     if intent_resp != "":
@@ -125,10 +129,10 @@ def create_customer():
     customer_dict["is_deleted"] = False
     if customer_duplicate == 0:
         bucket = sh.create_bucket(bucket_name)
-        logo_file = files["logo_file"]
+        logo_file = files["logo_file_path"]
         logo_public_url = sh.upload_logo(bucket=bucket, logo_file=logo_file)
         customer_dict["logo_file_path"] = logo_public_url
-        intent_file = files["intent_file"]
+        intent_file = files["intent_file_path"]
         intent_public_url = sh.upload_intent(bucket=bucket, intent_file=intent_file)
         customer_dict["intent_file_path"] = intent_public_url
     else:
@@ -156,19 +160,19 @@ def update_customer():
         return doc
     files = request.files
     bucket = sh.get_bucket_object_by_name(doc["bucket_name"])
-    logo_resp = validate_files_as_optional(files=files, file_type="logo_file")
+    logo_resp = validate_files_as_optional(files=files, file_type="logo_file_path")
     is_updated = False
     if logo_resp == "":
-        logo_file = files["logo_file"]
+        logo_file = files["logo_file_path"]
         if logo_file:
             logo_public_url = sh.upload_logo(bucket=bucket, logo_file=logo_file)
             doc["logo_file_path"] = logo_public_url
             is_updated = True
     else:
         return logo_resp
-    intent_resp = validate_files_as_optional(files=files, file_type="intent_file")
+    intent_resp = validate_files_as_optional(files=files, file_type="intent_file_path")
     if intent_resp == "":
-        intent_file = files["intent_file"]
+        intent_file = files["intent_file_path"]
         if intent_file:
             intent_public_url = sh.upload_intent(bucket=bucket, logo_file=intent_file)
             doc["intent_file_path"] = intent_public_url
