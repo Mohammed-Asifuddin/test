@@ -131,8 +131,9 @@ def create_customer():
         logo_public_url = sh.upload_logo(bucket=bucket, logo_file=logo_file)
         customer_dict["logo_file_path"] = logo_public_url
         intent_file = files["intent_file_path"]
-        intent_public_url = sh.upload_intent(bucket=bucket, intent_file=intent_file)
-        customer_dict["intent_file_path"] = intent_public_url
+        if intent_file.filename != "":
+            intent_public_url = sh.upload_intent(bucket=bucket, intent_file=intent_file)
+            customer_dict["intent_file_path"] = intent_public_url
     else:
         return customer_duplicate
     doc = fh.add_customer(customer_dict=customer_dict)
