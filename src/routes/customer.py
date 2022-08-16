@@ -163,7 +163,7 @@ def update_customer():
     bucket = sh.get_bucket_object_by_name(doc["bucket_name"])
     logo_resp = validate_files_as_optional(files=files, file_type="logo_file_path")
     is_updated = False
-    if logo_resp == "":
+    if logo_resp == "" and 'logo_file_path' in files and files['logo_file_path'].filename !="":
         logo_file = files["logo_file_path"]
         if logo_file:
             logo_public_url = sh.upload_logo(bucket=bucket, logo_file=logo_file)
@@ -172,7 +172,7 @@ def update_customer():
     else:
         return logo_resp
     intent_resp = validate_files_as_optional(files=files, file_type="intent_file_path")
-    if intent_resp == "":
+    if intent_resp == "" and 'intent_file_path' in files and files['intent_file_path'].filename !="":
         intent_file = files["intent_file_path"]
         if intent_file:
             intent_public_url = sh.upload_intent(bucket=bucket, intent_file=intent_file)
