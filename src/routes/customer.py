@@ -40,10 +40,7 @@ def validate_files_as_optional(files, file_type):
     """
     if (file_type in files) and (files[file_type]):
         file = files[file_type]
-        if (
-            not fv.allowed_image_file(file.filename)
-            and file_type == "logo_file_path"
-        ):
+        if not fv.allowed_image_file(file.filename) and file_type == "logo_file_path":
             resp = jsonify(
                 {"message": "Allowed Logo file types are png, jpg, jpeg, gif"}
             )
@@ -130,7 +127,11 @@ def create_customer():
         logo_file = files["logo_file_path"]
         logo_public_url = sh.upload_logo(bucket=bucket, logo_file=logo_file)
         customer_dict["logo_file_path"] = logo_public_url
-        if (('intent_file_path' in files) and intent_file and (intent_file.filename != "")):
+        if (
+            ("intent_file_path" in files)
+            and files["intent_file_path"]
+            and (files["intent_file_path"].filename != "")
+        ):
             intent_file = files["intent_file_path"]
             intent_public_url = sh.upload_intent(bucket=bucket, intent_file=intent_file)
             customer_dict["intent_file_path"] = intent_public_url
@@ -227,7 +228,7 @@ def update_customer_status():
     new_customer_doc: any
     if (
         "current_customer_id" in request.form.keys()
-        and request.form["current_customer_id"] !=""
+        and request.form["current_customer_id"] != ""
     ):
         current_customer_id = request.form["current_customer_id"]
         current_customer_doc = customer_id_validation(customer_id=current_customer_id)
@@ -236,7 +237,10 @@ def update_customer_status():
         current_customer_doc["status"] = False
     else:
         current_customer_doc = {}
-    if "new_customer_id" in request.form.keys() and request.form["new_customer_id"] !="" :
+    if (
+        "new_customer_id" in request.form.keys()
+        and request.form["new_customer_id"] != ""
+    ):
         new_customer_id = request.form["new_customer_id"]
         new_customer_doc = customer_id_validation(customer_id=new_customer_id)
         if not isinstance(new_customer_doc, (dict)):
