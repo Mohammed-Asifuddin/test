@@ -2,6 +2,7 @@
 Customer API service
 """
 import os
+from flask_cors import cross_origin
 from flask_api import status
 from flask import jsonify, request
 from src import app
@@ -99,6 +100,7 @@ def customer_id_validation(customer_id):
 
 
 @app.route(ROUTE, methods=["POST"])
+@cross_origin()
 def create_customer():
     """
     Create a new customer
@@ -115,8 +117,8 @@ def create_customer():
     bucket_name = "".join(char for char in name if char.isalnum()).lower()
     customer_duplicate = is_duplicate_customer(bucket_name=bucket_name)
     files = request.files
-    logo_resp = validate_files_as_mandatory(files=files, file_type="logo_file")
-    intent_resp = validate_files_as_optional(files=files, file_type="intent_file")
+    logo_resp = validate_files_as_mandatory(files=files, file_type="logo_file_path")
+    intent_resp = validate_files_as_optional(files=files, file_type="intent_file_path")
     if logo_resp != "":
         return logo_resp
     if intent_resp != "":
@@ -130,12 +132,17 @@ def create_customer():
     customer_dict["is_deleted"] = False
     if customer_duplicate == 0:
         bucket = sh.create_bucket(bucket_name)
-        logo_file = files["logo_file"]
+        logo_file = files["logo_file_path"]
         logo_public_url = sh.upload_logo(bucket=bucket, logo_file=logo_file)
         customer_dict["logo_file_path"] = logo_public_url
-        intent_file = files["intent_file"]
-        intent_public_url = sh.upload_intent(bucket=bucket, intent_file=intent_file)
-        customer_dict["intent_file_path"] = intent_public_url
+        if (
+            ("intent_file_path" in files)
+            and files["intent_file_path"]
+            and (files["intent_file_path"].filename != "")
+        ):
+            intent_file = files["intent_file_path"]
+            intent_public_url = sh.upload_intent(bucket=bucket, intent_file=intent_file)
+            customer_dict["intent_file_path"] = intent_public_url
     else:
         return customer_duplicate
     doc = fh.add_customer(customer_dict=customer_dict)
@@ -147,6 +154,7 @@ def create_customer():
 
 
 @app.route(ROUTE, methods=["PUT"])
+@cross_origin()
 def update_customer():
     """
     update a customer
@@ -161,21 +169,21 @@ def update_customer():
         return doc
     files = request.files
     bucket = sh.get_bucket_object_by_name(doc["bucket_name"])
-    logo_resp = validate_files_as_optional(files=files, file_type="logo_file")
+    logo_resp = validate_files_as_optional(files=files, file_type="logo_file_path")
     is_updated = False
-    if logo_resp == "":
-        logo_file = files["logo_file"]
+    if logo_resp == "" and 'logo_file_path' in files and files['logo_file_path'].filename !="":
+        logo_file = files["logo_file_path"]
         if logo_file:
             logo_public_url = sh.upload_logo(bucket=bucket, logo_file=logo_file)
             doc["logo_file_path"] = logo_public_url
             is_updated = True
     else:
         return logo_resp
-    intent_resp = validate_files_as_optional(files=files, file_type="intent_file")
-    if intent_resp == "":
-        intent_file = files["intent_file"]
+    intent_resp = validate_files_as_optional(files=files, file_type="intent_file_path")
+    if intent_resp == "" and 'intent_file_path' in files and files['intent_file_path'].filename !="":
+        intent_file = files["intent_file_path"]
         if intent_file:
-            intent_public_url = sh.upload_intent(bucket=bucket, logo_file=intent_file)
+            intent_public_url = sh.upload_intent(bucket=bucket, intent_file=intent_file)
             doc["intent_file_path"] = intent_public_url
             is_updated = True
     else:
@@ -228,7 +236,7 @@ def update_customer_status():
     new_customer_doc: any
     if (
         "current_customer_id" in request.form.keys()
-        and request.form["current_customer_id"]
+        and request.form["current_customer_id"] != ""
     ):
         current_customer_id = request.form["current_customer_id"]
         current_customer_doc = customer_id_validation(customer_id=current_customer_id)
@@ -237,7 +245,10 @@ def update_customer_status():
         current_customer_doc["status"] = False
     else:
         current_customer_doc = {}
-    if "new_customer_id" in request.form.keys() and request.form["new_customer_id"]:
+    if (
+        "new_customer_id" in request.form.keys()
+        and request.form["new_customer_id"] != ""
+    ):
         new_customer_id = request.form["new_customer_id"]
         new_customer_doc = customer_id_validation(customer_id=new_customer_id)
         if not isinstance(new_customer_doc, (dict)):

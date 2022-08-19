@@ -8,6 +8,5 @@ from config import envConfig, gCloudConfig
 app = Flask(__name__)
 
 CORS(app)
-cors = CORS(app, resources={r"/*": {"origins": envConfig.envVariables["cors"]["dev"]}})
 
 from src.routes import health, user_search, customer, product
