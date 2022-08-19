@@ -39,3 +39,9 @@ def upload_intent(bucket, intent_file):
     intent_blob = bucket.blob("intent/"+timestamp+intent_file.filename)
     intent_blob.upload_from_string(intent_file.read(), content_type=intent_file.content_type)
     return intent_blob.public_url
+
+def upload_product_video():
+    """
+    Upload a video file
+    """
+    return ""

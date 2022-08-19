@@ -26,8 +26,12 @@ def validate_files_as_mandatory(files, file_type):
         resp = jsonify({"message": "No " + file_type + " part in the request"})
         resp.status_code = 400
         return resp
-    if not fv.allowed_image_file(file.filename):
+    if (not fv.allowed_image_file(file.filename)) and (file_type == "logo_file"):
         resp = jsonify({"message": "Allowed Logo file types are png, jpg, jpeg, gif"})
+        resp.status_code = 400
+        return resp
+    if (not fv.allowed_video_file(file.filename)) and (file_type == "video_file_path"):
+        resp = jsonify({"message": "Allowed Video file types are mp4, mov, mp4v, avi"})
         resp.status_code = 400
         return resp
     return ""
@@ -39,10 +43,7 @@ def validate_files_as_optional(files, file_type):
     """
     if (file_type in files) and (files[file_type]):
         file = files[file_type]
-        if (
-            not fv.allowed_image_file(file.filename)
-            and file_type == "logo_file"
-        ):
+        if not fv.allowed_image_file(file.filename) and file_type == "logo_file_path":
             resp = jsonify(
                 {"message": "Allowed Logo file types are png, jpg, jpeg, gif"}
             )
@@ -50,9 +51,13 @@ def validate_files_as_optional(files, file_type):
             return resp
         if (
             not fv.allowed_intent_file(file.filename)
-            and file_type == "intent_file"
+            and file_type == "intent_file_path"
         ):
             resp = jsonify({"message": "Allowed intent file types are CSV"})
+            resp.status_code = 400
+            return resp
+        if not fv.allowed_video_file(file.filename) and file_type == "video_file_path":
+            resp = jsonify({"message": "Allowed video file types are CSV"})
             resp.status_code = 400
             return resp
     return ""
