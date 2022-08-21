@@ -46,6 +46,18 @@ def get_all_customers():
     return db.collection("Customer").where("is_deleted", "==", False).stream()
 
 
+def get_active_customer():
+    """
+    Return All customers
+    """
+    return (
+        db.collection("Customer")
+        .where("is_deleted", "==", False)
+        .where("status", "==", True)
+        .stream()
+    )
+
+
 def get_all_product_category():
     """
     Return All product categories
@@ -74,11 +86,13 @@ def get_product_category_by_product_bucket_name(product_bucket_name):
         doc_id_list.append(doc.id)
     return doc_id_list
 
+
 def add_product(product_dict):
     """
     Add new customer
     """
     return db.collection("Product").add(product_dict)
+
 
 def get_all_products():
     """
@@ -86,11 +100,13 @@ def get_all_products():
     """
     return db.collection("Product").where("is_deleted", "==", False).stream()
 
+
 def get_product_by_id(doc_id):
     """
     Get document by id
     """
     return db.collection("Product").document(doc_id).get()
+
 
 def update_product_by_id(doc_id, doc_dict):
     """
