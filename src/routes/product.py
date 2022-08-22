@@ -2,6 +2,7 @@
 Product API service
 """
 import time
+from flask_cors import cross_origin
 from flask_api import status
 from flask import request, jsonify
 from src import app
@@ -15,6 +16,7 @@ ROUTE = "/product"
 
 
 @app.route(ROUTE, methods=["POST"])
+@cross_origin()
 def add_product():
     """
     Add new product
@@ -77,6 +79,7 @@ def add_product():
 
 
 @app.route(ROUTE, methods=["PUT"])
+@cross_origin()
 def update_product():
     """
     Update product
@@ -171,3 +174,17 @@ def delete_product(product_id):
     resp = jsonify({constant.MESSAGE: "Product deleted successfully"})
     resp.status_code = 200
     return resp
+
+@app.route(ROUTE+'/categories', methods=["GET"])
+def get_all_products_categories ():
+    """
+    Get all products data
+    """
+    list_data = []
+    docs = fsh.get_all_product_categories()
+    for doc in docs:
+        data = doc.to_dict()
+        data["category_id"] = doc.id
+        list_data.append(data)
+    resp = jsonify(list_data)
+    return resp, status.HTTP_200_OK

@@ -119,3 +119,9 @@ def add_agent(agent_dict):
     Add new Agent
     """
     return db.collection("Agent").add(agent_dict)
+
+def get_all_product_categories():
+    """
+    Return All product categories
+    """
+    return db.collection("Product_Category").stream()

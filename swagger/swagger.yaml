@@ -68,6 +68,9 @@ paths:
                     format: string
                   is_deleted:
                     type: boolean
+                  customer_display_id:
+                    type: string
+                    format: string
         "405":
           description: "Invalid input"
     put:
@@ -128,6 +131,9 @@ paths:
                     format: string
                   is_deleted:
                     type: boolean
+                  customer_display_id:
+                    type: string
+                    format: string
         "405":
           description: "Invalid input"
     get:
@@ -167,6 +173,9 @@ paths:
                   format: string
                 is_deleted:
                   type: boolean
+                customer_display_id:
+                  type: string
+                  format: string
   /customer/{id}:
     delete:
       tags:
@@ -214,6 +223,45 @@ paths:
           description: "Customer status changed successfully"
         "405":
           description: "Invalid input"
+  /customer/active:
+    get:
+      tags:
+      - "Customer"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        "405":
+          description: "Invalid Request"
+        "200":
+          description: "Customer Details"
+          schema:
+            type: object
+            properties:
+              customer_id:
+                type: string
+                format: uuid
+              name:
+                type: string
+                format: string
+              logo_file_path:
+                type: string
+              intent_file_path:
+                type: string
+              status:
+                type: boolean
+              training_status:
+                type: integer
+                format: int64
+              bucket_name:
+                type: string
+                format: string
+              is_deleted:
+                type: boolean
+              customer_display_id:
+                type: string
+                format: string
   /product:
     post:
       tags:
@@ -230,31 +278,35 @@ paths:
         schema:
           type: object
           required:
-          - "productName"
-          - "productLabel"
-          - "customerId"
-          - "productDescription"
-          - "productVideo"
+          - "name"
+          - "label"
+          - "customer_id"
+          - "description"
+          - "video_file_path"
+          - "category_id"
           properties:
-            customerId:
+            customer_id:
               type: string
               format: uuid
-            productId:
+            product_id:
               type: string
               format: uuid
-            productName:
+            category_id:
               type: string
-            productLabel:
+              format: uuid
+            name:
               type: string
-            productDescription:
+            label:
               type: string
-            productVideoFile:
+            description:
+              type: string
+            video_file_path:
               type: string
               format: binary
-            productIntentFile:
+            intent_file_path:
               type: string
               format: binary
-            productMetadata:
+            metadata:
                   type: array
                   items:
                     type: object
@@ -271,38 +323,52 @@ paths:
           schema:
             type: object
             properties:
-              customerId:
+              message:
                 type: string
-                format: uuid
-              productId:
-                type: string
-                format: uuid
-              productName:
-                type: string
-              productLabel:
-                type: string
-              productDescription:
-                type: string
-              productVideoPath:
-                type: string
-              productIntentPath:
-                type: string
-              productImageStatus:
-                type: boolean
-              productTrainingStatus:
-                type: integer
-                format: int64
-              productMetadata:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        Key:
-                          type: string
-                          format: string
-                        value:
-                          type: string
-                          format: string
+                format: string
+              data:
+                type: object
+                properties:
+                  customer_id:
+                    type: string
+                    format: uuid
+                  product_id:
+                    type: string
+                    format: uuid
+                  category_id:
+                    type: string
+                    format: uuid
+                  name:
+                    type: string
+                  label:
+                    type: string
+                  description:
+                    type: string
+                  video_file_path:
+                    type: string
+                  intent_file_path:
+                    type: string
+                  image_status:
+                    type: boolean
+                  training_status:
+                    type: integer
+                    format: int64
+                  is_deleted:
+                    type: boolean
+                  product_display_id:
+                    type: string
+                    format: string
+                  metadata:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            Key:
+                              type: string
+                              format: string
+                            value:
+                              type: string
+                              format: string
         "405":
           description: "Invalid input"
     put:
@@ -320,30 +386,20 @@ paths:
         schema:
           type: object
           required:
-          - "productId"
+          - "product_id"
           properties:
-            customerId:
+            product_id:
               type: string
               format: uuid
-            productId:
+            label:
               type: string
-              format: uuid
-            productName:
+            description:
               type: string
-            productLabel:
+            video_file_path:
               type: string
-            productDescription:
+            intent_file_path:
               type: string
-            productVideoFile:
-              type: string
-            productIntentFile:
-              type: string
-            productImageStatus:
-                type: boolean
-            productTrainingStatus:
-              type: integer
-              format: int64
-            productMetadata:
+            metadata:
                   type: array
                   items:
                     type: object
@@ -360,38 +416,52 @@ paths:
           schema:
             type: object
             properties:
-              customerId:
+              message:
                 type: string
-                format: uuid
-              productId:
-                type: string
-                format: uuid
-              productName:
-                type: string
-              productLabel:
-                type: string
-              productDescription:
-                type: string
-              productVideoPath:
-                type: string
-              productIntentPath:
-                type: string
-              productImageStatus:
-                type: boolean
-              productTrainingStatus:
-                type: integer
-                format: int64
-              productMetadata:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        Key:
-                          type: string
-                          format: string
-                        value:
-                          type: string
-                          format: string
+                format: string
+              data:
+                type: object
+                properties:
+                  customer_id:
+                    type: string
+                    format: uuid
+                  product_id:
+                    type: string
+                    format: uuid
+                  category_id:
+                    type: string
+                    format: uuid
+                  name:
+                    type: string
+                  label:
+                    type: string
+                  description:
+                    type: string
+                  video_file_path:
+                    type: string
+                  intent_file_path:
+                    type: string
+                  image_status:
+                    type: boolean
+                  training_status:
+                    type: integer
+                    format: int64
+                  is_deleted:
+                    type: boolean
+                  product_display_id:
+                    type: string
+                    format: string
+                  metadata:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            Key:
+                              type: string
+                              format: string
+                            value:
+                              type: string
+                              format: string
         "405":
           description: "Invalid input"
     get:
@@ -411,28 +481,36 @@ paths:
             items:
               type: object
               properties:
-                customerId:
+                customer_id:
                   type: string
                   format: uuid
-                productId:
+                product_id:
                   type: string
                   format: uuid
-                productName:
+                category_id:
                   type: string
-                productLabel:
+                  format: uuid
+                name:
                   type: string
-                productDescription:
+                label:
                   type: string
-                productVideoPath:
+                description:
                   type: string
-                productIntentPath:
+                video_file_path:
                   type: string
-                productImageStatus:
+                intent_file_path:
+                  type: string
+                image_status:
                   type: boolean
-                productTrainingStatus:
+                training_status:
                   type: integer
                   format: int64
-                productMetadata:
+                is_deleted:
+                  type: boolean
+                product_display_id:
+                  type: string
+                  format: string
+                metadata:
                       type: array
                       items:
                         type: object
@@ -461,6 +539,36 @@ paths:
       responses:
         "405":
           description: "Invalid input"
+  /product/categories:
+    get:
+      tags:
+      - "Product Category"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        "405":
+          description: "Invalid Request"
+        "200":
+          description: "Product categories Details"
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                category_id:
+                  type: string
+                  format: uuid
+                category:
+                  type: string
+                  format: string
+                category_code:
+                  type: string
+                  format: string
+                description:
+                  type: string
+                  format: string
   /user/search:
     post:
       tags:
