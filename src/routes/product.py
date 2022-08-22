@@ -117,8 +117,7 @@ def update_product():
             video_file_path=request.files[constant.VIDEO_FILE_PATH],
         )
         doc[constant.VIDEO_FILE_PATH] = video_file_public_url
-    else:
-        return video_file_path_resp
+
     intent_file_path_resp = customer.validate_files_as_optional(
         files=request.files, file_type=constant.INTENT_FILE_PATH
     )
@@ -133,12 +132,14 @@ def update_product():
             intent_file_path=request.files[constant.INTENT_FILE_PATH],
         )
         doc[constant.INTENT_FILE_PATH] = intent_file_public_url
-    else:
-        return intent_file_path_resp
+
+    print('*****************************')
+    print(product_id)
+    print(doc)
+    print('*****************************')
     fsh.update_product_by_id(doc_id=product_id, doc_dict=doc)
     resp = jsonify({constant.MESSAGE: "Product updated successfully", "data": doc})
-    return resp, status.HTTP_200_OK
-
+    return resp
 
 @app.route(ROUTE, methods=["GET"])
 def get_all_products():
