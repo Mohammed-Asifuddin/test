@@ -24,7 +24,7 @@ def add_product():
     product_dict = {}
     validate_resp = pv.validate_create_request(create_request=request)
     if validate_resp == "":
-        product_name = request.form["name"]
+        product_name = request.form[constant.NAME]
         product_bucket_name = "".join(
             char for char in product_name if char.isalnum()
         ).lower()
@@ -34,26 +34,26 @@ def add_product():
         if product_duplicate == 0:
             customer_id = request.form[constant.CUSTOMER_ID]
             product_dict[constant.CUSTOMER_ID] = customer_id
-            product_dict["name"] = request.form["name"]
-            product_dict["label"] = request.form["label"]
-            product_dict["description"] = request.form["description"]
-            product_dict["category_id"] = request.form["category_id"]
-            product_dict["metadata"] = request.form["metadata"]
-            product_dict["image_status"] = 0
-            product_dict["training_status"] = 0
-            product_dict["is_deleted"] = False
+            product_dict[constant.NAME] = request.form[constant.NAME]
+            product_dict[constant.LABEL] = request.form[constant.LABEL]
+            product_dict[constant.DESCRIPTION] = request.form[constant.DESCRIPTION]
+            product_dict[constant.CATEGORY_ID] = request.form[constant.CATEGORY_ID]
+            product_dict[constant.METADATA] = request.form[constant.METADATA]
+            product_dict[constant.IMAGE_STATUS] = 0
+            product_dict[constant.TRAINING_STATUS] = 0
+            product_dict[constant.IS_DELETED] = False
             product_dict["product_display_id"] = str(int(time.time())).split(
                 ".", maxsplit=1
             )[0]
-            product_dict["product_bucket_name"] = product_bucket_name
+            product_dict[constant.PRODUCT_BUCKET_NAME] = product_bucket_name
             doc = fsh.get_customer_by_id(customer_id).to_dict()
-            customer_bucket_name = doc["bucket_name"]
-            product_dict["customer_bucket_name"] = customer_bucket_name
-            product_dict["customer_name"] = doc["name"]
+            customer_bucket_name = doc[constant.BUCKET_NAME]
+            product_dict[constant.CUSTOMER_BUCKET_NAME] = customer_bucket_name
+            product_dict[constant.CUSTOMER_NAME] = doc[constant.NAME]
             category_doc = fsh.get_product_category_by_id(
-                category_id=request.form["category_id"]
+                category_id=request.form[constant.CATEGORY_ID]
             ).to_dict()
-            product_dict["category_name"] = category_doc["category"]
+            product_dict[constant.CATEGORY_NAME] = category_doc[constant.CATEGORY]
             video_file_path = request.files[constant.VIDEO_FILE_PATH]
             product_dict[constant.VIDEO_FILE_PATH] = fv.upload_video_file(
                 customer_bucket_name=customer_bucket_name,
@@ -72,13 +72,13 @@ def add_product():
                     intent_file_path=intent_file_path,
                 )
             new_doc = fsh.add_product(product_dict=product_dict)
-            product_dict["product_id"] = new_doc[-1].id
+            product_dict[constant.PRODUCT_ID] = new_doc[-1].id
         else:
             return product_duplicate
     else:
         return validate_resp
     resp = jsonify(
-        {constant.MESSAGE: "Product added successfully", "data": product_dict}
+        {constant.MESSAGE: constant.PRODUCT_ADD_MESSAGE, constant.DATA: product_dict}
     )
     return resp, status.HTTP_201_CREATED
 
@@ -92,17 +92,23 @@ def update_product():
     product_id_resp = pv.validate_update_request(update_request=request)
     if product_id_resp != "":
         return product_id_resp
-    product_id = request.form["product_id"]
+    product_id = request.form[constant.PRODUCT_ID]
     doc = fsh.get_product_by_id(doc_id=product_id).to_dict()
-    if "label" in request.form.keys() and request.form["label"].strip() != "":
-        doc["label"] = request.form["label"]
     if (
-        "description" in request.form.keys()
-        and request.form["description"].strip() != ""
+        constant.LABEL in request.form.keys()
+        and request.form[constant.LABEL].strip() != ""
     ):
-        doc["description"] = request.form["description"]
-    if "metadata" in request.form.keys() and request.form["metadata"].strip() != "":
-        doc["metadata"] = request.form["metadata"]
+        doc[constant.LABEL] = request.form[constant.LABEL]
+    if (
+        constant.DESCRIPTION in request.form.keys()
+        and request.form[constant.DESCRIPTION].strip() != ""
+    ):
+        doc[constant.DESCRIPTION] = request.form[constant.DESCRIPTION]
+    if (
+        constant.METADATA in request.form.keys()
+        and request.form[constant.METADATA].strip() != ""
+    ):
+        doc[constant.METADATA] = request.form[constant.METADATA]
     video_file_path_resp = customer.validate_files_as_optional(
         files=request.files, file_type=constant.VIDEO_FILE_PATH
     )
@@ -112,8 +118,8 @@ def update_product():
         and request.files[constant.VIDEO_FILE_PATH].filename.strip() != ""
     ):
         video_file_public_url = fv.upload_video_file(
-            customer_bucket_name=doc["customer_bucket_name"],
-            product_bucket_name=doc["product_bucket_name"],
+            customer_bucket_name=doc[constant.CUSTOMER_BUCKET_NAME],
+            product_bucket_name=doc[constant.PRODUCT_BUCKET_NAME],
             video_file_path=request.files[constant.VIDEO_FILE_PATH],
         )
         doc[constant.VIDEO_FILE_PATH] = video_file_public_url
@@ -127,19 +133,17 @@ def update_product():
         and request.files[constant.INTENT_FILE_PATH].filename.strip() != ""
     ):
         intent_file_public_url = fv.upload_intent_file(
-            customer_bucket_name=doc["customer_bucket_name"],
-            product_bucket_name=doc["product_bucket_name"],
+            customer_bucket_name=doc[constant.CUSTOMER_BUCKET_NAME],
+            product_bucket_name=doc[constant.PRODUCT_BUCKET_NAME],
             intent_file_path=request.files[constant.INTENT_FILE_PATH],
         )
         doc[constant.INTENT_FILE_PATH] = intent_file_public_url
-
-    print('*****************************')
-    print(product_id)
-    print(doc)
-    print('*****************************')
     fsh.update_product_by_id(doc_id=product_id, doc_dict=doc)
-    resp = jsonify({constant.MESSAGE: "Product updated successfully", "data": doc})
+    resp = jsonify(
+        {constant.MESSAGE: constant.PRODUCT_UPDATE_MESSAGE, constant.DATA: doc}
+    )
     return resp
+
 
 @app.route(ROUTE, methods=["GET"])
 def get_all_products():
@@ -150,7 +154,7 @@ def get_all_products():
     docs = fsh.get_all_products()
     for doc in docs:
         data = doc.to_dict()
-        data["product_id"] = doc.id
+        data[constant.PRODUCT_ID] = doc.id
         list_data.append(data)
     resp = jsonify(list_data)
     return resp, status.HTTP_200_OK
@@ -162,22 +166,22 @@ def delete_product(product_id):
     Delete customers data
     """
     if product_id.strip() == "":
-        resp = jsonify({constant.MESSAGE: "product_id is neither empty nor blank"})
+        resp = jsonify({constant.MESSAGE: constant.PRODUCT_EMPTY_OR_BLANK})
         resp.status_code = 400
         return resp
     docs = fsh.get_product_by_id(doc_id=product_id)
     if not docs.exists:
-        resp = jsonify({constant.MESSAGE: "No data found with given product_id"})
+        resp = jsonify({constant.MESSAGE: constant.PRODUCT_NO_DATA})
         resp.status_code = 400
         return resp
     doc = docs.to_dict()
     if not isinstance(doc, (dict)):
-        resp = jsonify({constant.MESSAGE: "No data found for given product_id."})
+        resp = jsonify({constant.MESSAGE: constant.PRODUCT_NO_DATA})
         resp.status_code = 400
         return resp
     doc["is_deleted"] = True
     fsh.update_product_by_id(doc_id=product_id, doc_dict=doc)
-    resp = jsonify({constant.MESSAGE: "Product deleted successfully"})
+    resp = jsonify({constant.MESSAGE: constant.PRODUCT_DELETE_MESSAGE})
     resp.status_code = 200
     return resp
 
@@ -191,7 +195,7 @@ def get_all_products_categories():
     docs = fsh.get_all_product_categories()
     for doc in docs:
         data = doc.to_dict()
-        data["category_id"] = doc.id
+        data[constant.CATEGORY_ID] = doc.id
         list_data.append(data)
     resp = jsonify(list_data)
     return resp, status.HTTP_200_OK

@@ -39,9 +39,7 @@ def validate_files_as_mandatory(files, file_type):
     if (not fv.allowed_video_file(file.filename)) and (
         file_type == constant.VIDEO_FILE_PATH
     ):
-        resp = jsonify(
-            {constant.MESSAGE: "Allowed Video file types are mp4, mov, mp4v, avi"}
-        )
+        resp = jsonify({constant.MESSAGE: constant.ALLOWED_VIDEO_MESSAGE})
         resp.status_code = 400
         return resp
     return ""
@@ -64,16 +62,14 @@ def validate_files_as_optional(files, file_type):
             not fv.allowed_intent_file(file.filename)
             and file_type == constant.INTENT_FILE_PATH
         ):
-            resp = jsonify({constant.MESSAGE: "Allowed intent file types are CSV"})
+            resp = jsonify({constant.MESSAGE: constant.ALLOWED_INTENT_MESSAGE})
             resp.status_code = 400
             return resp
         if (
             not fv.allowed_video_file(file.filename)
             and file_type == constant.VIDEO_FILE_PATH
         ):
-            resp = jsonify(
-                {constant.MESSAGE: "Allowed video file types are mp4, mov, mp4v, avi"}
-            )
+            resp = jsonify({constant.MESSAGE: constant.ALLOWED_VIDEO_MESSAGE})
             resp.status_code = 400
             return resp
     return ""
@@ -88,7 +84,7 @@ def is_duplicate_customer(bucket_name):
     doc_id_list = fh.get_customer_by_bucket_name(bucket_name)
     if len(doc_id_list) == 0:
         return len(doc_id_list)
-    resp = jsonify({constant.MESSAGE: "Customer Exists"})
+    resp = jsonify({constant.MESSAGE: constant.CUSTOMER_EXISTS_MESSAGE})
     resp.status_code = 400
     return resp
 
@@ -98,17 +94,17 @@ def customer_id_validation(customer_id):
     Update status common code
     """
     if customer_id.strip() == "":
-        resp = jsonify({constant.MESSAGE: "customer_id is neither empty nor blank"})
+        resp = jsonify({constant.MESSAGE: constant.CUSTOMER_BLANK_MESSAGE})
         resp.status_code = 400
         return resp
     docs = fh.get_customer_by_id(customer_id)
     if not docs.exists:
-        resp = jsonify({constant.MESSAGE: "No data found with given customer_id"})
+        resp = jsonify({constant.MESSAGE: constant.CUSTOMER_NO_DATA_MESSAGE})
         resp.status_code = 400
         return resp
     doc = docs.to_dict()
-    if doc["is_deleted"]:
-        resp = jsonify({constant.MESSAGE: "Customer already deleted."})
+    if doc[constant.IS_DELETED]:
+        resp = jsonify({constant.MESSAGE: constant.CUSTOMER_DELETED_MESSAGE})
         resp.status_code = 400
         return resp
     return doc
@@ -120,13 +116,13 @@ def create_customer():
     """
     Create a new customer
     """
-    if "name" not in request.form.keys():
-        resp = jsonify({constant.MESSAGE: "Name is mandatory fields"})
+    if constant.NAME not in request.form.keys():
+        resp = jsonify({constant.MESSAGE: constant.NAME_MANDATORY})
         resp.status_code = 400
         return resp
-    name = request.form["name"]
+    name = request.form[constant.NAME]
     if name.strip() == "":
-        resp = jsonify({constant.MESSAGE: "Name is neither empty nor blank"})
+        resp = jsonify({constant.MESSAGE: constant.NAME_NOT_BLANK})
         resp.status_code = 400
         return resp
     bucket_name = "".join(char for char in name if char.isalnum()).lower()
@@ -144,14 +140,14 @@ def create_customer():
         return intent_resp
     bucket = ""
     customer_dict = {}
-    customer_dict["name"] = name
-    customer_dict["bucket_name"] = bucket_name
-    customer_dict["status"] = False
-    customer_dict["training_status"] = 0
-    customer_dict["is_deleted"] = False
-    customer_dict["customer_display_id"] = str(int(time.time())).split(".", maxsplit=1)[
-        0
-    ]
+    customer_dict[constant.NAME] = name
+    customer_dict[constant.BUCKET_NAME] = bucket_name
+    customer_dict[constant.STATUS] = False
+    customer_dict[constant.TRAINING_STATUS] = 0
+    customer_dict[constant.IS_DELETED] = False
+    customer_dict[constant.CUSTOMER_DISPLAY_ID] = str(int(time.time())).split(
+        ".", maxsplit=1
+    )[0]
     if customer_duplicate == 0:
         bucket = sh.create_bucket(bucket_name)
         logo_file = files[constant.LOGO_FILE_PATH]
@@ -171,13 +167,16 @@ def create_customer():
     customer_dict[constant.CUSTOMER_ID] = doc[-1].id
     agent_response = df.create_agent(os.getenv("PROJECT_ID", "retail-btl-dev"), name)
     agent_dict = {}
-    agent_dict[constant.CUSTOMER_ID]=doc[-1].id
-    agent_dict['agent_id'] = (agent_response.name.split('/'))[-1]
-    agent_dict['display_name'] = name
+    agent_dict[constant.CUSTOMER_ID] = doc[-1].id
+    agent_dict[constant.AGENT_ID] = (agent_response.name.split("/"))[-1]
+    agent_dict[constant.DISPLAY_NAME] = name
     fh.add_agent(agent_dict=agent_dict)
     # TODO : send pubsub notification to create Intent
     resp = jsonify(
-        {constant.MESSAGE: "Customer created successfully", "data": customer_dict}
+        {
+            constant.MESSAGE: constant.CUSTOMER_SUCCESS_MESSAGE,
+            constant.DATA: customer_dict,
+        }
     )
     return resp, status.HTTP_201_CREATED
 
@@ -189,7 +188,7 @@ def update_customer():
     update a customer
     """
     if constant.CUSTOMER_ID not in request.form.keys():
-        resp = jsonify({constant.MESSAGE: "customer_id is mandatory"})
+        resp = jsonify({constant.MESSAGE: constant.CUSTOMER_MANDATORY})
         resp.status_code = 400
         return resp
     customer_id = request.form[constant.CUSTOMER_ID]
@@ -197,7 +196,7 @@ def update_customer():
     if not isinstance(doc, (dict)):
         return doc
     files = request.files
-    bucket = sh.get_bucket_object_by_name(doc["bucket_name"])
+    bucket = sh.get_bucket_object_by_name(doc[constant.BUCKET_NAME])
     logo_resp = validate_files_as_optional(
         files=files, file_type=constant.LOGO_FILE_PATH
     )
@@ -232,7 +231,7 @@ def update_customer():
     if is_updated:
         fh.update_customer_by_id(doc_id=customer_id, doc_dict=doc)
     # TODO : send pubsub notification to create Intent
-    resp = jsonify({constant.MESSAGE: "Customer updated", "data": doc})
+    resp = jsonify({constant.MESSAGE: constant.CUSTOMER_UPDATED, constant.DATA: doc})
     return resp, status.HTTP_200_OK
 
 
@@ -279,7 +278,7 @@ def delete_customer(customer_id):
         return doc
     doc["is_deleted"] = True
     fh.update_customer_by_id(doc_id=customer_id, doc_dict=doc)
-    resp = jsonify({constant.MESSAGE: "Customer deleted successfully"})
+    resp = jsonify({constant.MESSAGE: constant.CUSTOMER_DELETED_MESSAGE_SUCCESS})
     resp.status_code = 200
     return resp
 
@@ -294,25 +293,25 @@ def update_customer_status():
     new_customer_id: any
     new_customer_doc: any
     if (
-        "current_customer_id" in request.form.keys()
-        and request.form["current_customer_id"] != ""
+        constant.CURRENT_CUSTOMER_ID in request.form.keys()
+        and request.form[constant.CURRENT_CUSTOMER_ID] != ""
     ):
-        current_customer_id = request.form["current_customer_id"]
+        current_customer_id = request.form[constant.CURRENT_CUSTOMER_ID]
         current_customer_doc = customer_id_validation(customer_id=current_customer_id)
         if not isinstance(current_customer_doc, (dict)):
             return current_customer_doc
-        current_customer_doc["status"] = False
+        current_customer_doc[constant.STATUS] = False
     else:
         current_customer_doc = {}
     if (
-        "new_customer_id" in request.form.keys()
-        and request.form["new_customer_id"] != ""
+        constant.NEW_CUSTOMER_ID in request.form.keys()
+        and request.form[constant.NEW_CUSTOMER_ID] != ""
     ):
-        new_customer_id = request.form["new_customer_id"]
+        new_customer_id = request.form[constant.NEW_CUSTOMER_ID]
         new_customer_doc = customer_id_validation(customer_id=new_customer_id)
         if not isinstance(new_customer_doc, (dict)):
             return new_customer_doc
-        new_customer_doc["status"] = True
+        new_customer_doc[constant.STATUS] = True
     else:
         new_customer_doc = {}
     if len(current_customer_doc.keys()) != 0:
@@ -321,9 +320,10 @@ def update_customer_status():
         )
     if len(new_customer_doc.keys()) != 0:
         fh.update_customer_by_id(doc_id=new_customer_id, doc_dict=new_customer_doc)
-    resp = jsonify({constant.MESSAGE: "Customer status changed successfully"})
+    resp = jsonify({constant.MESSAGE: constant.CUSTOMER_STATUS_UPDATE_MESSAGE})
     resp.status_code = 200
     return resp
+
 
 @app.route(ROUTE + "/<customer_id>/intent", methods=["POST"])
 def manageIntentsForCustomer(customer_id):
@@ -332,6 +332,7 @@ def manageIntentsForCustomer(customer_id):
     """
     print("In manageIntentsForCustomer()")
     return intents.addUpdateDeleteIntents(customer_id, "")
+
 
 @app.route(ROUTE + "/<customer_id>/intent", methods=["GET"])
 def getIntentsForCustomer(customer_id):

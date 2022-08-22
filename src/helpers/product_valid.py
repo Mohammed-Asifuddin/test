@@ -45,17 +45,17 @@ def validate_customer_id(customer_id_request):
     Customer Id Validate
     """
     if constant.CUSTOMER_ID not in customer_id_request.form.keys():
-        resp = jsonify({constant.MESSAGE: "customer_id is mandatory"})
+        resp = jsonify({constant.MESSAGE: constant.CUSTOMER_MANDATORY})
         resp.status_code = 400
         return resp
     customer_id = customer_id_request.form[constant.CUSTOMER_ID]
     if customer_id.strip() == "":
-        resp = jsonify({constant.MESSAGE: "customer_id is neither empty nor blank"})
+        resp = jsonify({constant.MESSAGE: constant.CUSTOMER_BLANK_MESSAGE})
         resp.status_code = 400
         return resp
     doc = customer.customer_id_validation(customer_id=customer_id)
     if not isinstance(doc, (dict)):
-        resp = jsonify({constant.MESSAGE: "No data found for given customer_id."})
+        resp = jsonify({constant.MESSAGE: constant.CUSTOMER_NO_DATA_MESSAGE})
         resp.status_code = 400
         return resp
     return ""
@@ -65,23 +65,23 @@ def validate_category_id(category_id_request):
     """
     Category Id Validate
     """
-    if "category_id" not in category_id_request.form.keys():
-        resp = jsonify({constant.MESSAGE: "customer_id is mandatory"})
+    if constant.CATEGORY_ID not in category_id_request.form.keys():
+        resp = jsonify({constant.MESSAGE: constant.CATEGORY_ID_MANDATORY})
         resp.status_code = 400
         return resp
-    category_id = category_id_request.form["category_id"]
+    category_id = category_id_request.form[constant.CATEGORY_ID]
     if category_id.strip() == "":
-        resp = jsonify({constant.MESSAGE: "category_id is neither empty nor blank"})
+        resp = jsonify({constant.MESSAGE: constant.CATEGORY_NOT_BLANK})
         resp.status_code = 400
         return resp
     docs = fsh.get_product_category_by_id(category_id=category_id)
     if not docs.exists:
-        resp = jsonify({constant.MESSAGE: "No data found with given category_id"})
+        resp = jsonify({constant.MESSAGE: constant.CATEGORY_NO_DATA})
         resp.status_code = 400
         return resp
     doc = docs.to_dict()
     if not isinstance(doc, (dict)):
-        resp = jsonify({constant.MESSAGE: "No data found for given category_id."})
+        resp = jsonify({constant.MESSAGE: constant.CATEGORY_NO_DATA})
         resp.status_code = 400
         return resp
     return ""
@@ -91,13 +91,13 @@ def validate_name(name_request):
     """
     Name field Validation
     """
-    if "name" not in name_request.form.keys():
-        resp = jsonify({constant.MESSAGE: "Name is mandatory fields"})
+    if constant.NAME not in name_request.form.keys():
+        resp = jsonify({constant.MESSAGE: constant.NAME_MANDATORY})
         resp.status_code = 400
         return resp
-    name = name_request.form["name"]
+    name = name_request.form[constant.NAME]
     if name.strip() == "":
-        resp = jsonify({constant.MESSAGE: "Name is neither empty nor blank"})
+        resp = jsonify({constant.MESSAGE: constant.NAME_NOT_BLANK})
         resp.status_code = 400
         return resp
     return ""
@@ -107,13 +107,13 @@ def validate_label(label_request):
     """
     Label field Validation
     """
-    if "label" not in label_request.form.keys():
-        resp = jsonify({constant.MESSAGE: "Label is mandatory fields"})
+    if constant.LABEL not in label_request.form.keys():
+        resp = jsonify({constant.MESSAGE: constant.LABEL_MANDATORY})
         resp.status_code = 400
         return resp
-    label = label_request.form["label"]
+    label = label_request.form[constant.LABEL]
     if label.strip() == "":
-        resp = jsonify({constant.MESSAGE: "Label is neither empty nor blank"})
+        resp = jsonify({constant.MESSAGE: constant.LABEL_NOT_BLANK})
         resp.status_code = 400
         return resp
     return ""
@@ -123,13 +123,13 @@ def validate_description(description_request):
     """
     Description field Validation
     """
-    if "description" not in description_request.form.keys():
-        resp = jsonify({constant.MESSAGE: "Description is mandatory fields"})
+    if constant.DESCRIPTION not in description_request.form.keys():
+        resp = jsonify({constant.MESSAGE: constant.DESCRIPTION_MANDATORY})
         resp.status_code = 400
         return resp
-    description = description_request.form["description"]
+    description = description_request.form[constant.DESCRIPTION]
     if description.strip() == "":
-        resp = jsonify({constant.MESSAGE: "Description is neither empty nor blank"})
+        resp = jsonify({constant.MESSAGE: constant.DESCRIPTION_NOT_BLANK})
         resp.status_code = 400
         return resp
     return ""
@@ -142,7 +142,7 @@ def is_duplicate_product(product_bucket_name):
     doc_id_list = fsh.get_product_category_by_product_bucket_name(product_bucket_name)
     if len(doc_id_list) == 0:
         return len(doc_id_list)
-    resp = jsonify({constant.MESSAGE: "Product Exists"})
+    resp = jsonify({constant.MESSAGE: constant.PRODUCT_EXISTS})
     resp.status_code = 400
     return resp
 
@@ -161,23 +161,23 @@ def validate_product_id(product_id_request):
     """
     Product Id Validate
     """
-    if "product_id" not in product_id_request.form.keys():
-        resp = jsonify({constant.MESSAGE: "product_id is mandatory"})
+    if constant.PRODUCT_ID not in product_id_request.form.keys():
+        resp = jsonify({constant.MESSAGE: constant.PRODUCT_ID_MANDATORY})
         resp.status_code = 400
         return resp
-    product_id = product_id_request.form["product_id"]
+    product_id = product_id_request.form[constant.PRODUCT_ID]
     if product_id.strip() == "":
-        resp = jsonify({constant.MESSAGE: "product_id is neither empty nor blank"})
+        resp = jsonify({constant.MESSAGE: constant.PRODUCT_EMPTY_OR_BLANK})
         resp.status_code = 400
         return resp
     docs = fsh.get_product_by_id(doc_id=product_id)
     if not docs.exists:
-        resp = jsonify({constant.MESSAGE: "No data found with given product_id"})
+        resp = jsonify({constant.MESSAGE: constant.PRODUCT_NO_DATA})
         resp.status_code = 400
         return resp
     doc = docs.to_dict()
     if not isinstance(doc, (dict)):
-        resp = jsonify({constant.MESSAGE: "No data found for given product_id."})
+        resp = jsonify({constant.MESSAGE: constant.PRODUCT_NO_DATA})
         resp.status_code = 400
         return resp
     return ""
