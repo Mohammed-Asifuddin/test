@@ -9,7 +9,7 @@ from src import app
 from src.helpers import product_valid as pv
 from src.helpers.gCloud import firestore_helper as fsh
 from src.helpers import file_validator as fv
-from src.routes import customer
+from src.routes import customer, intents
 from src.helpers import constant
 
 ROUTE = "/product"
@@ -191,3 +191,15 @@ def get_all_products_categories ():
         list_data.append(data)
     resp = jsonify(list_data)
     return resp, status.HTTP_200_OK
+
+@app.route(ROUTE + "/<product_id>/intent", methods=["POST"])
+def manageIntentsForProduct(product_id):
+    """
+    Add/Update/Delete product intents
+    """
+    print("In manageIntentsForProduct()")
+    return intents.addUpdateDeleteIntents("", product_id)
+
+@app.route(ROUTE + "/<product_id>/intent", methods=["GET"])
+def getIntentsForProduct(product_id):
+    return intents.getIntents("", product_id)

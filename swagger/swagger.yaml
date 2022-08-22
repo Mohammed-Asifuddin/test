@@ -640,8 +640,25 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Intent'
-        "405":
-          description: "Invalid input"
+        "400":
+          description: ""
+          schema:
+            type: "object"
+            properties:
+              error:
+                type: "string"
+                description: >
+                  error:
+                   * `First Error` - No Agent found for this customer!
+                   * `Second Error` - No intents associated with this Agent ID!
+                   * `Third Error` - There was an error while fetching an intent from DialogFlow!
+                   * `Fourth Error` - There was an error while building intents response!
+                enum:
+                - "No Agent found for this customer!"
+                - "No intents associated with this Agent ID!"
+                - "There was an error while fetching an intent from DialogFlow!"
+                - "There was an error while building intents response!"
+                default: "No Agent found for this customer! No intents associated with this Agent ID! There was an error while fetching an intent from DialogFlow! There was an error while building intents response!"
     post:
       summary: Creates/Updates/Deletes intents mentioned in the CSV
       description: This will be used every time the CSV is updated. It'll create/update/delete intents mentioned in the CSV depending on the Action column
@@ -657,24 +674,26 @@ paths:
         description: "Customer id for intents"
         required: true
         type: string
-      - name: "filePath"
-        in: "body"
-        schema:
-          type: object
-          required:
-            - filePath
-          properties:
-            filePath:
-              type: string
       responses:
         "200":
-          description: "Successfully added intents for the customer"
+          description: "Customer intents updated successfully."
+        "400":
+          description: ""
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/Intent'
-        "405":
-          description: "Invalid input"
+            type: "object"
+            properties:
+              error:
+                type: "string"
+                description: >
+                  error:
+                   * `First Error` - No Agent found for this customer!
+                   * `Second Error` - No Intents file found at the path!
+                   * `Third Error` - Customer intents update failed!
+                enum:
+                - "No Agent found for this customer!"
+                - "No Intents file found at the path!"
+                - "Customer intents update failed!"
+                default: "No Agent found for this customer! No Intents file found at the path! Customer intents update failed!"
   /product/{id}/intent:
     get:
       summary: Returns all intents for a specific product
@@ -698,8 +717,25 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Intent'
-        "405":
-          description: "Invalid input"
+        "400":
+          description: ""
+          schema:
+            type: "object"
+            properties:
+              error:
+                type: "string"
+                description: >
+                  error:
+                   * `First Error` - No Agent found for this product!
+                   * `Second Error` - No intents associated with this Agent ID!
+                   * `Third Error` - There was an error while fetching an intent from DialogFlow!
+                   * `Fourth Error` - There was an error while building intents response!
+                enum:
+                - "No Agent found for this product!"
+                - "No intents associated with this Agent ID!"
+                - "There was an error while fetching an intent from DialogFlow!"
+                - "There was an error while building intents response!"
+                default: "No Agent found for this product! No intents associated with this Agent ID! There was an error while fetching an intent from DialogFlow! There was an error while building intents response!"
     post:
       summary: Creates/Updates/Deletes intents mentioned in the CSV
       description: This will be used every time the CSV is updated. It'll create/update/delete intents mentioned in the CSV depending on the Action column
@@ -715,24 +751,26 @@ paths:
         description: "Product id for intents"
         required: true
         type: string
-      - name: "filePath"
-        in: "body"
-        schema:
-          type: object
-          required:
-            - filePath
-          properties:
-            filePath:
-              type: string
       responses:
         "200":
-          description: "Successfully added intents for the product"
+          description: "Product intents updated successfully."
+        "400":
+          description: ""
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/Intent'
-        "405":
-          description: "Invalid input"
+            type: "object"
+            properties:
+              error:
+                type: "string"
+                description: >
+                  error:
+                   * `First Error` - No Agent found for this product!
+                   * `Second Error` - No Intents file found at the path!
+                   * `Third Error` - Product intents update failed!
+                enum:
+                - "No Agent found for this product!"
+                - "No Intents file found at the path!"
+                - "Product intents update failed!"
+                default: "No Agent found for this product! No Intents file found at the path! Product intents update failed!"
 definitions:
   ApiResponse:
       type: "object"

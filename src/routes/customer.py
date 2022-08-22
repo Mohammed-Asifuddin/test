@@ -12,6 +12,7 @@ from src.helpers.gCloud import storage_handler as sh
 from src.helpers.gCloud import firestore_helper as fh
 from src.helpers.gCloud import dialogflow as df
 from src.helpers import constant
+from src.routes import intents
 
 ROUTE = "/customer"
 
@@ -323,3 +324,15 @@ def update_customer_status():
     resp = jsonify({constant.MESSAGE: "Customer status changed successfully"})
     resp.status_code = 200
     return resp
+
+@app.route(ROUTE + "/<customer_id>/intent", methods=["POST"])
+def manageIntentsForCustomer(customer_id):
+    """
+    Add/Update/Delete customer intents
+    """
+    print("In manageIntentsForCustomer()")
+    return intents.addUpdateDeleteIntents(customer_id, "")
+
+@app.route(ROUTE + "/<customer_id>/intent", methods=["GET"])
+def getIntentsForCustomer(customer_id):
+    return intents.getIntents(customer_id, "")
