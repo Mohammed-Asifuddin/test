@@ -172,7 +172,7 @@ def create_customer():
     agent_dict = {}
     agent_dict[constant.CUSTOMER_ID]=doc[-1].id
     agent_dict['agent_id'] = (agent_response.name.split('/'))[-1]
-    agent_dict['display_name'] = doc['name']
+    agent_dict['display_name'] = name
     fh.add_agent(agent_dict=agent_dict)
     # TODO : send pubsub notification to create Intent
     resp = jsonify(
