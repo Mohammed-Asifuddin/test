@@ -113,3 +113,9 @@ def update_product_by_id(doc_id, doc_dict):
     Update document by id
     """
     return db.collection("Product").document(doc_id).set(doc_dict)
+
+def add_agent(agent_dict):
+    """
+    Add new Agent
+    """
+    return db.collection("Agent").add(agent_dict)

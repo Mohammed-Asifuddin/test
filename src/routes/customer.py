@@ -168,7 +168,12 @@ def create_customer():
         return customer_duplicate
     doc = fh.add_customer(customer_dict=customer_dict)
     customer_dict[constant.CUSTOMER_ID] = doc[-1].id
-    df.create_agent(os.getenv("PROJECT_ID", "retail-btl-dev"), name)
+    agent_response = df.create_agent(os.getenv("PROJECT_ID", "retail-btl-dev"), name)
+    agent_dict = {}
+    agent_dict[constant.CUSTOMER_ID]=doc[-1].id
+    agent_dict['agent_id'] = (agent_response.name.split('/'))[-1]
+    agent_dict['display_name'] = doc['name']
+    fh.add_agent(agent_dict=agent_dict)
     # TODO : send pubsub notification to create Intent
     resp = jsonify(
         {constant.MESSAGE: "Customer created successfully", "data": customer_dict}
