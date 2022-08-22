@@ -85,52 +85,49 @@ def update_product():
     if product_id_resp != "":
         return product_id_resp
     product_id = request.form["product_id"]
-    is_updated = False
     doc = fsh.get_product_by_id(doc_id=product_id).to_dict()
     if "label" in request.form.keys() and request.form["label"].strip() != "":
         doc["label"] = request.form["label"]
-        is_updated = True
     if (
         "description" in request.form.keys()
         and request.form["description"].strip() != ""
     ):
         doc["description"] = request.form["description"]
-        is_updated = True
     if "metadata" in request.form.keys() and request.form["metadata"].strip() != "":
         doc["metadata"] = request.form["metadata"]
-        is_updated = True
     video_file_path_resp = customer.validate_files_as_optional(
         files=request.files, file_type=constant.VIDEO_FILE_PATH
     )
-    if video_file_path_resp == "":
-        video_file = request.files[constant.VIDEO_FILE_PATH]
-        if video_file:
-            video_file_public_url = fv.upload_video_file(
-                customer_bucket_name=doc["customer_bucket_name"],
-                product_bucket_name=doc["product_bucket_name"],
-                video_file_path=video_file,
-            )
-            doc[constant.VIDEO_FILE_PATH] = video_file_public_url
-            is_updated = True
+    if (
+        video_file_path_resp == ""
+        and request.files[constant.VIDEO_FILE_PATH]
+        and request.files[constant.VIDEO_FILE_PATH].filename.strip() != ""
+    ):
+        video_file_public_url = fv.upload_video_file(
+            customer_bucket_name=doc["customer_bucket_name"],
+            product_bucket_name=doc["product_bucket_name"],
+            video_file_path=request.files[constant.VIDEO_FILE_PATH],
+        )
+        doc[constant.VIDEO_FILE_PATH] = video_file_public_url
     else:
         return video_file_path_resp
     intent_file_path_resp = customer.validate_files_as_optional(
         files=request.files, file_type=constant.INTENT_FILE_PATH
     )
-    if intent_file_path_resp == "":
-        intent_file = request.files[constant.INTENT_FILE_PATH]
-        if intent_file:
-            intent_file_public_url = fv.upload_intent_file(
-                customer_bucket_name=doc["customer_bucket_name"],
-                product_bucket_name=doc["product_bucket_name"],
-                intent_file_path=intent_file,
-            )
-            doc[constant.INTENT_FILE_PATH] = intent_file_public_url
-            is_updated = True
+    if (
+        intent_file_path_resp == ""
+        and request.files[constant.INTENT_FILE_PATH]
+        and request.files[constant.INTENT_FILE_PATH].filename.strip() != ""
+    ):
+        intent_file_public_url = fv.upload_intent_file(
+            customer_bucket_name=doc["customer_bucket_name"],
+            product_bucket_name=doc["product_bucket_name"],
+            intent_file_path=request.files[constant.INTENT_FILE_PATH],
+        )
+        doc[constant.INTENT_FILE_PATH] = intent_file_public_url
     else:
         return intent_file_path_resp
-    if is_updated:
-        fsh.update_product_by_id(doc_id=product_id, doc_dict=doc)
+    fsh.update_product_by_id(doc_id=product_id, doc_dict=doc)
     resp = jsonify({constant.MESSAGE: "Product updated successfully", "data": doc})
     return resp, status.HTTP_200_OK
 
