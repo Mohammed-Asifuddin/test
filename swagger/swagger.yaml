@@ -288,9 +288,6 @@ paths:
             customer_id:
               type: string
               format: uuid
-            product_id:
-              type: string
-              format: uuid
             category_id:
               type: string
               format: uuid

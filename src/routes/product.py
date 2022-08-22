@@ -49,6 +49,9 @@ def add_product():
             doc = fsh.get_customer_by_id(customer_id).to_dict()
             customer_bucket_name = doc["bucket_name"]
             product_dict["customer_bucket_name"] = customer_bucket_name
+            product_dict["customer_name"] = doc["name"]
+            category_doc = fsh.get_product_category_by_id(category_id=request.form["category_id"]).to_dict()
+            product_dict["category_name"] = category_doc["category"]
             video_file_path = request.files[constant.VIDEO_FILE_PATH]
             product_dict[constant.VIDEO_FILE_PATH] = fv.upload_video_file(
                 customer_bucket_name=customer_bucket_name,
