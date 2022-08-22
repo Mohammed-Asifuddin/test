@@ -50,7 +50,9 @@ def add_product():
             customer_bucket_name = doc["bucket_name"]
             product_dict["customer_bucket_name"] = customer_bucket_name
             product_dict["customer_name"] = doc["name"]
-            category_doc = fsh.get_product_category_by_id(category_id=request.form["category_id"]).to_dict()
+            category_doc = fsh.get_product_category_by_id(
+                category_id=request.form["category_id"]
+            ).to_dict()
             product_dict["category_name"] = category_doc["category"]
             video_file_path = request.files[constant.VIDEO_FILE_PATH]
             product_dict[constant.VIDEO_FILE_PATH] = fv.upload_video_file(
@@ -76,7 +78,7 @@ def add_product():
     else:
         return validate_resp
     resp = jsonify(
-        {constant.MESSAGE: "Customer created successfully", "data": product_dict}
+        {constant.MESSAGE: "Product added successfully", "data": product_dict}
     )
     return resp, status.HTTP_201_CREATED
 
@@ -106,7 +108,7 @@ def update_product():
     )
     if (
         video_file_path_resp == ""
-        and request.files[constant.VIDEO_FILE_PATH]
+        and constant.VIDEO_FILE_PATH in request.files
         and request.files[constant.VIDEO_FILE_PATH].filename.strip() != ""
     ):
         video_file_public_url = fv.upload_video_file(
@@ -122,7 +124,7 @@ def update_product():
     )
     if (
         intent_file_path_resp == ""
-        and request.files[constant.INTENT_FILE_PATH]
+        and constant.INTENT_FILE_PATH in request.files
         and request.files[constant.INTENT_FILE_PATH].filename.strip() != ""
     ):
         intent_file_public_url = fv.upload_intent_file(
@@ -178,8 +180,9 @@ def delete_product(product_id):
     resp.status_code = 200
     return resp
 
-@app.route(ROUTE+'/categories', methods=["GET"])
-def get_all_products_categories ():
+
+@app.route(ROUTE + "/categories", methods=["GET"])
+def get_all_products_categories():
     """
     Get all products data
     """
@@ -192,6 +195,7 @@ def get_all_products_categories ():
     resp = jsonify(list_data)
     return resp, status.HTTP_200_OK
 
+
 @app.route(ROUTE + "/<product_id>/intent", methods=["POST"])
 def manageIntentsForProduct(product_id):
     """
@@ -199,6 +203,7 @@ def manageIntentsForProduct(product_id):
     """
     print("In manageIntentsForProduct()")
     return intents.addUpdateDeleteIntents("", product_id)
+
 
 @app.route(ROUTE + "/<product_id>/intent", methods=["GET"])
 def getIntentsForProduct(product_id):
