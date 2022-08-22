@@ -42,3 +42,6 @@ uritemplate==4.1.1
 urllib3==1.26.11
 Werkzeug==2.1.2
 zipp==3.8.0
+google-cloud-dialogflow-cx==1.13.0
+gcsfs==2022.7.1
+firebase-admin==5.2.0
