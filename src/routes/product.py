@@ -11,6 +11,7 @@ from src.helpers.gCloud import firestore_helper as fsh
 from src.helpers import file_validator as fv
 from src.routes import customer, intents
 from src.helpers import constant
+from src.helpers.gCloud import pubsub_helper as psh
 
 ROUTE = "/product"
 
@@ -77,6 +78,10 @@ def add_product():
             return product_duplicate
     else:
         return validate_resp
+    psh.push_to_pubsub(
+        product_id=product_dict[constant.PRODUCT_ID],
+        video_file_path=product_dict[constant.VIDEO_FILE_PATH],
+    )
     resp = jsonify(
         {constant.MESSAGE: constant.PRODUCT_ADD_MESSAGE, constant.DATA: product_dict}
     )
@@ -123,6 +128,10 @@ def update_product():
             video_file_path=request.files[constant.VIDEO_FILE_PATH],
         )
         doc[constant.VIDEO_FILE_PATH] = video_file_public_url
+        psh.push_to_pubsub(
+            product_id=product_id,
+            video_file_path=doc[constant.VIDEO_FILE_PATH],
+        )
 
     intent_file_path_resp = customer.validate_files_as_optional(
         files=request.files, file_type=constant.INTENT_FILE_PATH

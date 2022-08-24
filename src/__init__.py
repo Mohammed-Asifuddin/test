@@ -9,4 +9,4 @@ app = Flask(__name__)
 
 CORS(app)
 
-from src.routes import health, user_search, customer, product
+from src.routes import health, user_search, customer, product, ml_training

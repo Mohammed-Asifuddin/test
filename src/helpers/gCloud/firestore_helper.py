@@ -11,6 +11,7 @@ TABLE_CUSTOMER = "Customer"
 TABLE_PRODUCT = "Product"
 TABLE_PRODUCT_CATEGORY = "Product_Category"
 TABLE_AGENT = "Agent"
+TABLE_CONFIGURATION = "Configuration"
 EQUAL_OPERATOR = "=="
 
 
@@ -139,3 +140,9 @@ def get_all_product_categories():
     Return All product categories
     """
     return db.collection(TABLE_PRODUCT_CATEGORY).stream()
+
+def get_configuration():
+    """
+    Fetch configuration data
+    """
+    return db.collection(TABLE_CONFIGURATION).stream()
