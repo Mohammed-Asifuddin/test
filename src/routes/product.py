@@ -55,6 +55,7 @@ def add_product():
                 category_id=request.form[constant.CATEGORY_ID]
             ).to_dict()
             product_dict[constant.CATEGORY_NAME] = category_doc[constant.CATEGORY]
+            product_dict[constant.CATEGORY_CODE] = category_doc[constant.CATEGORY_CODE]
             video_file_path = request.files[constant.VIDEO_FILE_PATH]
             product_dict[constant.VIDEO_FILE_PATH] = fv.upload_video_file(
                 customer_bucket_name=customer_bucket_name,

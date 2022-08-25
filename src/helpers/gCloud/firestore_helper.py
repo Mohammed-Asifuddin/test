@@ -13,6 +13,7 @@ TABLE_PRODUCT_CATEGORY = "Product_Category"
 TABLE_AGENT = "Agent"
 TABLE_CONFIGURATION = "Configuration"
 EQUAL_OPERATOR = "=="
+TABLE_TRAINING_DATA = "Training_Data"
 
 
 def get_customer_by_bucket_name(bucket_name):
@@ -141,8 +142,32 @@ def get_all_product_categories():
     """
     return db.collection(TABLE_PRODUCT_CATEGORY).stream()
 
+
 def get_configuration():
     """
     Fetch configuration data
     """
     return db.collection(TABLE_CONFIGURATION).stream()
+
+
+def get_non_imported_products():
+    """
+    Get all untrained products
+    """
+    return (
+        db.collection(TABLE_TRAINING_DATA)
+        .where(constant.IS_IMPORTED, EQUAL_OPERATOR, False)
+        .stream()
+    )
+
+
+def get_non_imported_products_by_id(product_id):
+    """
+    Get all untrained products
+    """
+    return (
+        db.collection(TABLE_TRAINING_DATA)
+        .where(constant.IS_IMPORTED, EQUAL_OPERATOR, False)
+        .where(constant.PRODUCT_ID, EQUAL_OPERATOR, product_id)
+        .stream()
+    )
