@@ -1,9 +1,6 @@
 """
 Application constants
 """
-from sre_constants import CATEGORY
-
-
 LOGO_FILE_PATH = "logo_file_path"
 VIDEO_FILE_PATH = "video_file_path"
 INTENT_FILE_PATH = "intent_file_path"

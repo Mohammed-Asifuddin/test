@@ -128,6 +128,7 @@ def update_product():
             video_file_path=request.files[constant.VIDEO_FILE_PATH],
         )
         doc[constant.VIDEO_FILE_PATH] = video_file_public_url
+        doc[constant.IMAGE_STATUS] = False
         psh.push_to_pubsub(
             product_id=product_id,
             video_file_path=doc[constant.VIDEO_FILE_PATH],
@@ -172,7 +173,7 @@ def get_all_products():
 @app.route(ROUTE + "/<product_id>", methods=["DELETE"])
 def delete_product(product_id):
     """
-    Delete customers data
+    Delete product data
     """
     if product_id.strip() == "":
         resp = jsonify({constant.MESSAGE: constant.PRODUCT_EMPTY_OR_BLANK})
