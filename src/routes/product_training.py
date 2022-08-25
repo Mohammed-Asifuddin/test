@@ -2,8 +2,7 @@
 ML Training helper
 """
 
-from operator import contains
-from urllib import request
+import os
 from flask_cors import cross_origin
 from flask_api import status
 from flask import request, jsonify
@@ -11,6 +10,7 @@ from google.cloud import storage
 from src import app
 from src.helpers import constant
 from src.helpers.gCloud import firestore_helper as fsh
+from src.helpers.gCloud import vision_product_search as vps
 
 
 @app.route("/product-training", methods=["POST"])
@@ -100,11 +100,25 @@ def generate_csv_using_images_path(product_id, training_paths):
             if training_path in image_path:
                 row = f"{image_path},,{customer_bucket_name},{product_id},{category_name},{product_name},,\n"
                 rows = rows + row
-    #print(rows)
+    # print(rows)
     print("CSV data prepared and saving into gcs")
     bucket = client.get_bucket(customer_bucket_name)
-    blob = bucket.blob('csv/'+customer_bucket_name+'.csv')
+    csv_file_path = "csv/" + customer_bucket_name + ".csv"
+    blob = bucket.blob(csv_file_path)
     blob.upload_from_string(rows)
     print(blob.path)
     print(blob.self_link)
-    print('CSV Generated and uploaded')
+    print("CSV Generated and uploaded")
+    gcs_uri = "gs://" + customer_bucket_name + "/" + csv_file_path
+    vps.import_product_sets(
+        project_id=os.getenv("PROJECT_ID", "retail-btl-dev"),
+        location="us-west1",
+        gcs_uri=gcs_uri,
+    )
+    print('Updating is_imported and is_trained status')
+    for training_path_dict in training_paths:
+        td_id = training_path_dict["TD_ID"]
+        training_path_dict[constant.IS_IMPORTED] = True
+        training_path_dict[constant.IS_TRAINED] = True
+        training_path_dict.pop("TD_ID")
+        fsh.update_training_data_by_id(doc_id=td_id, doc_dict=training_path_dict)

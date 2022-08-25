@@ -171,3 +171,9 @@ def get_non_imported_products_by_id(product_id):
         .where(constant.PRODUCT_ID, EQUAL_OPERATOR, product_id)
         .stream()
     )
+
+def update_training_data_by_id(doc_id, doc_dict):
+    """
+    Update document by id
+    """
+    return db.collection(TABLE_TRAINING_DATA).document(doc_id).set(doc_dict)
