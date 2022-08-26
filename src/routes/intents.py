@@ -38,13 +38,27 @@ def get_agent_id(customer_id, product_id):
     """
     Returns the respective agent ID stored in FS for the customer/product
     """
-    if customer_id != "":
-        docs = db.collection('Agent').where('customer_id', '==', customer_id).stream()
-    elif product_id != "":
-        docs = db.collection('Agent').where('product_id', '==', product_id).stream()
+    cust_id = customer_id
+    docs = ""
+    if product_id != "":
+        doc = db.collection('Product').document(product_id).get()
+        if doc.id:
+            cust_id = doc.to_dict()['customer_id']
+    if cust_id != "":
+        docs = db.collection('Agent').where('customer_id', '==', cust_id).stream()
     for doc in docs:
         if doc.id:
             return doc.to_dict()['agent_id']
+    return ""
+
+def get_customer_name(customer_id):
+    """
+    Returns customer name for a given customer ID
+    """
+    if customer_id != "":
+        doc = db.collection('Customer').document(customer_id).get()
+    if doc.id:
+        return doc.to_dict()['name']
     return ""
 
 def get_masked_intent_ids(customer_id, product_id):
@@ -208,6 +222,8 @@ def get_intents(customer_id, product_id):
         for intent in intents:
             if intent.display_name in ("Default Welcome Intent", "Default Negative Intent"):
                 continue
+            if intent.name.split("intents/")[1] not in intent_ids:
+                continue
             try:
                 request = dialogflowcx_v3.GetIntentRequest(
                     name= intent.name,
@@ -285,7 +301,7 @@ def add_update_delete_intents(customer_id, product_id):
 
     if (agent_id is None or agent_id == ''):
         traceback.format_exc()
-        resp = jsonify({"message": "No Agent found for this customer."})
+        resp = jsonify({"message": "No Agent found for this customer/product."})
         resp.status_code = 400
         return resp
 
@@ -361,7 +377,9 @@ def download_to_csv(customer_id, product_id):
         response = get_intents(customer_id, product_id)
         intents = response.json['intents']
         header = ['ID', 'Name', 'Description', 'Training Phrases', 'Response', 'Action']
-        intent_path = f'/tmp/{customer_id}.csv'
+
+        customer_name = get_customer_name(customer_id)
+        intent_path = f'/tmp/{customer_name}-Intents.csv'
 
         with open(intent_path, 'w',  encoding='UTF8') as csvfile:
             writer = csv.writer(csvfile)
