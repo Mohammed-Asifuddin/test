@@ -74,6 +74,7 @@ def video_to_image(event, context):
     fsh.add_training_data(td_dict=td_dict)
     print("saved row in training data")
     doc[constant.IMAGE_STATUS] = True
+    doc[constant.TRAINING_STATUS] = 1
     fsh.update_product_image_status(
         doc_id=pubsub_message[constant.PRODUCT_ID], doc_dict=doc
     )

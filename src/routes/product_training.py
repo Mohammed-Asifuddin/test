@@ -122,3 +122,12 @@ def generate_csv_using_images_path(product_id, training_paths):
         training_path_dict[constant.IS_TRAINED] = True
         training_path_dict.pop("TD_ID")
         fsh.update_training_data_by_id(doc_id=td_id, doc_dict=training_path_dict)
+    update_training_status(product_id=product_id)
+
+def update_training_status(product_id):
+    """
+    Update training status
+    """
+    doc = fsh.get_product_by_id(doc_id=product_id).to_dict()
+    doc[constant.TRAINING_STATUS]=2
+    fsh.update_product_by_id(doc_id=product_id,doc_dict=doc)
