@@ -213,14 +213,24 @@ def get_all_products_categories():
 
 
 @app.route(ROUTE + "/<product_id>/intent", methods=["POST"])
-def manageIntentsForProduct(product_id):
+def manage_product_intents(product_id):
     """
     Add/Update/Delete product intents
     """
     print("In manageIntentsForProduct()")
-    return intents.addUpdateDeleteIntents("", product_id)
+    return intents.add_update_delete_intents("", product_id)
 
 
 @app.route(ROUTE + "/<product_id>/intent", methods=["GET"])
-def getIntentsForProduct(product_id):
-    return intents.getIntents("", product_id)
+def get_product_intents(product_id):
+    """
+    Returns a list of product intents
+    """
+    return intents.get_intents("", product_id)
+
+@app.route(ROUTE + "/<product_id>/intent/download", methods=["GET"])
+def download_product_intents(product_id):
+    """
+    Downloads a CSV file of product intents
+    """
+    return intents.download_to_csv("", product_id)

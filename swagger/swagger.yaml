@@ -694,6 +694,29 @@ paths:
                 - "No Intents file found at the path!"
                 - "Customer intents update failed!"
                 default: "No Agent found for this customer! No Intents file found at the path! Customer intents update failed!"
+  /customer/{id}/intent/download:
+    get:
+      summary: Downloads a CSV file of customer intents
+      description: Calls the get intent API, writes all the intents to the csv file and prompts the user to save it.
+      tags:
+      - Customer
+      consumes:
+      - "application/json"
+      produces:
+      - "application/csv"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "Customer id for intents"
+        required: true
+        type: string
+      responses:
+        "200":
+          description: A CSV file
+          schema:
+            type: file
+        "400":
+          description: There was an error while downloading intents CSV!
   /product/{id}/intent:
     get:
       summary: Returns all intents for a specific product
@@ -771,6 +794,29 @@ paths:
                 - "No Intents file found at the path!"
                 - "Product intents update failed!"
                 default: "No Agent found for this product! No Intents file found at the path! Product intents update failed!"
+  /product/{id}/intent/download:
+    get:
+      summary: Downloads a CSV file of product intents
+      description: Calls the get intent API, writes all the intents to the csv file and prompts the user to save it.
+      tags:
+      - Product
+      consumes:
+      - "application/json"
+      produces:
+      - "application/csv"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "Product id for intents"
+        required: true
+        type: string
+      responses:
+        "200":
+          description: A CSV file
+          schema:
+            type: file
+        "400":
+          description: There was an error while downloading intents CSV!
 definitions:
   ApiResponse:
       type: "object"
@@ -798,39 +844,18 @@ definitions:
           $ref: '#/definitions/Part'
       repeatCount:
         type: "integer"
-  Parameter:
-    type: "object"
-    properties:
-      id:
-        type: "string"
-      entityType:
-        type: "string"
-      isList:
-        type: "boolean"
-      redact:
-        type: "boolean"
   Intent:
     type: "object"
     properties:
-      name:
-        type: "string"
       displayName:
         type: "string"
       trainingPhrases:
         type: array
         items:
           $ref: '#/definitions/TrainingPhrase'
-      parameters:
-        type: array
-        items:
-          $ref: '#/definitions/Parameter'
-      priority:
-        type: "integer"
-      isFallback:
-        type: "boolean"
-      labels:
-        type: "object"
-        additionalProperties:
-          type: "string"
       description:
+        type: "string"
+      maskedIntentId:
+        type: "string"
+      fulfillments:
         type: "string"

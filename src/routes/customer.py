@@ -326,14 +326,24 @@ def update_customer_status():
 
 
 @app.route(ROUTE + "/<customer_id>/intent", methods=["POST"])
-def manageIntentsForCustomer(customer_id):
+def manage_customer_intents(customer_id):
     """
     Add/Update/Delete customer intents
     """
     print("In manageIntentsForCustomer()")
-    return intents.addUpdateDeleteIntents(customer_id, "")
+    return intents.add_update_delete_intents(customer_id, "")
 
 
 @app.route(ROUTE + "/<customer_id>/intent", methods=["GET"])
-def getIntentsForCustomer(customer_id):
-    return intents.getIntents(customer_id, "")
+def get_customer_intents(customer_id):
+    """
+    Returns a list of customer intents
+    """
+    return intents.get_intents(customer_id, "")
+
+@app.route(ROUTE + "/<customer_id>/intent/download", methods=["GET"])
+def download_customer_intents(customer_id):
+    """
+    Downloads a CSV file of customer intents
+    """
+    return intents.download_to_csv(customer_id, "")
