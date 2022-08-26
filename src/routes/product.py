@@ -130,6 +130,7 @@ def update_product():
         )
         doc[constant.VIDEO_FILE_PATH] = video_file_public_url
         doc[constant.IMAGE_STATUS] = False
+        doc[constant.TRAINING_STATUS] = 0
         psh.push_to_pubsub(
             product_id=product_id,
             video_file_path=doc[constant.VIDEO_FILE_PATH],

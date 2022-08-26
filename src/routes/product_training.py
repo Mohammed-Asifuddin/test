@@ -32,7 +32,7 @@ def generate_csv():
     # Generate CSV
     for product in products_by_id:
         generate_csv_using_images_path(
-            product_id=product, training_paths=products_by_id[product_id]
+            product_id=product, training_paths=products_by_id[product]
         )
     # TODO : Send import request to vision
     resp = jsonify({constant.MESSAGE: "Product training initiated successfully."})
@@ -115,7 +115,7 @@ def generate_csv_using_images_path(product_id, training_paths):
         location="us-west1",
         gcs_uri=gcs_uri,
     )
-    print('Updating is_imported and is_trained status')
+    print("Updating is_imported and is_trained status")
     for training_path_dict in training_paths:
         td_id = training_path_dict["TD_ID"]
         training_path_dict[constant.IS_IMPORTED] = True
@@ -124,10 +124,11 @@ def generate_csv_using_images_path(product_id, training_paths):
         fsh.update_training_data_by_id(doc_id=td_id, doc_dict=training_path_dict)
     update_training_status(product_id=product_id)
 
+
 def update_training_status(product_id):
     """
     Update training status
     """
     doc = fsh.get_product_by_id(doc_id=product_id).to_dict()
-    doc[constant.TRAINING_STATUS]=2
-    fsh.update_product_by_id(doc_id=product_id,doc_dict=doc)
+    doc[constant.TRAINING_STATUS] = 2
+    fsh.update_product_by_id(doc_id=product_id, doc_dict=doc)
