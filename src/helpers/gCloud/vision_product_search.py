@@ -2,7 +2,7 @@ from google.cloud import vision
 
 
 def get_similar_products_file(
-    project_id, location, product_set_id, product_category, image_uri
+    project_id, location, product_set_id, product_categories, image_uri
 ):
     """Search similar products to image.
     Args:
@@ -21,31 +21,24 @@ def get_similar_products_file(
 
     product_search_client = vision.ProductSearchClient()
     image_annotator_client = vision.ImageAnnotatorClient()
-
-    # image_bytes = base64.b64decode(image_uri)
-    # print(type(image_bytes))
     image = vision.Image(content=image_uri)
-
-    # product search specific parameters
     product_set_path = product_search_client.product_set_path(
         project=project_id, location=location, product_set=product_set_id
     )
     product_search_params = vision.ProductSearchParams(
-        product_set=product_set_path, product_categories=[product_category]
+        product_set=product_set_path, product_categories=product_categories
     )
     image_context = vision.ImageContext(product_search_params=product_search_params)
-
-    # Search products similar to the image.
     response = image_annotator_client.product_search(image, image_context=image_context)
-
-    # index_time = response.product_search_results.index_time
+    print(response)
     results = response.product_search_results.results
     # product_id_list = []
     # for result in results:
     #     product = result.product
     #     split_image = result.image.split('/')
     #     product_id_list.append(split_image[-1])
-    return results[0].product.product_labels[0].value
+    #return results[0].product.product_labels[0].value
+    return results[0].product.display_name
 
 
 def import_product_sets(project_id, location, gcs_uri):
