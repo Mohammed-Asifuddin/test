@@ -4,19 +4,8 @@ from google.cloud import vision
 def get_similar_products_file(
     project_id, location, product_set_id, product_categories, image_uri
 ):
-    """Search similar products to image.
-    Args:
-        project_id: Id of the project.
-        location: A compute region name.
-        product_set_id: Id of the product set.
-        product_category: Category of the product.
-        image_uri: Image URL link / GCS storage gsutil link.
-        filter: Condition to be applied on the labels.
-                Example for filter: (color = red OR color = blue) AND style = kids
-                It will search on all products with the following labels:
-                color:red AND style:kids
-                color:blue AND style:kids
-        max_results: The maximum number of results (matches) to return. If omitted, all results are returned.
+    """
+    Search similar products to image.
     """
 
     product_search_client = vision.ProductSearchClient()

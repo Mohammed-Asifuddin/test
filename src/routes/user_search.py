@@ -2,7 +2,6 @@
 User product search API module
 """
 import os
-from urllib import response
 from flask import jsonify, request
 from src import app
 from src.helpers.gCloud import vision_product_search as vps
@@ -30,8 +29,6 @@ def search_product():
         product_categories=product_categories,
         image_uri=image_data,
     )
-    print("**************************************")
-    print(response.score)
     if response.score >= 0.65:
         product_id = response.product.product_labels[0].value
         doc = fh.get_product_by_id(doc_id=product_id).to_dict()
@@ -41,7 +38,6 @@ def search_product():
     else:
         resp = jsonify({constant.MESSAGE: "Product not found"})
         resp.status_code = 400
-    print("**************************************")
     return resp
 
 
@@ -56,10 +52,8 @@ def get_active_customer_info():
         data[constant.CUSTOMER_ID] = doc.id
         list_data.append(data)
     active_customer = {}
-    print(list_data)
     if len(list_data) != 0:
         active_customer = list_data[0]
-    print(active_customer)
     return active_customer
 
 

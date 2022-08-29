@@ -593,30 +593,54 @@ paths:
         "200":
           description: "Invalid input"
           schema:
-            type: array
-            items:
-              type: object
-              properties:
-                productName:
-                  type: string
-                productLabel:
-                  type: string
-                productDescription:
-                  type: string
-                productScore:
-                  type: integer
-                  format: int64
-                productMetadata:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          Key:
-                            type: string
-                            format: string
-                          value:
-                            type: string
-                            format: string
+            type: object
+            properties:
+              message:
+                type: string
+                format: string
+              data:
+                type: object
+                properties:
+                  customer_id:
+                    type: string
+                    format: uuid
+                  product_id:
+                    type: string
+                    format: uuid
+                  category_id:
+                    type: string
+                    format: uuid
+                  name:
+                    type: string
+                  label:
+                    type: string
+                  description:
+                    type: string
+                  video_file_path:
+                    type: string
+                  intent_file_path:
+                    type: string
+                  image_status:
+                    type: boolean
+                  training_status:
+                    type: integer
+                    format: int64
+                  is_deleted:
+                    type: boolean
+                  product_display_id:
+                    type: string
+                    format: string
+                  metadata:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            Key:
+                              type: string
+                              format: string
+                            value:
+                              type: string
+                              format: string
   /customer/{id}/intent:
     get:
       summary: Returns all intents for a specific customer
