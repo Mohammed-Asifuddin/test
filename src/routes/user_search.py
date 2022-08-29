@@ -2,6 +2,7 @@
 User product search API module
 """
 import os
+from urllib import response
 from flask import jsonify, request
 from src import app
 from src.helpers.gCloud import vision_product_search as vps
@@ -15,33 +16,32 @@ def search_product():
     User product search Post Method
     """
     image_data = request.get_json()["imageFile"]
-    # Get Active Customer Info
     active_customer = get_active_customer_info()
-    print("*************************************")
-    print(active_customer)
-    print(type(active_customer))
-    print("*************************************")
     product_categories = get_customer_product_categories(
         active_customer[constant.CUSTOMER_ID]
     )
     product_categories = [*set(product_categories)]
-    # Get Active Customer Products Categories
     project_id = os.getenv("PROJECT_ID", "retail-btl-dev")
     location = "us-west1"
-    data = vps.get_similar_products_file(
+    response = vps.get_similar_products_file(
         project_id=project_id,
         location=location,
         product_set_id=active_customer[constant.BUCKET_NAME],
         product_categories=product_categories,
         image_uri=image_data,
     )
-    print(data)
-    resp_dict = {
-        "productName": "Ford",
-    }
-    resp_dict["productName"] = data
-    resp = jsonify(resp_dict)
-    resp.status_code = 200
+    print("**************************************")
+    print(response.score)
+    if response.score >= 0.65:
+        product_id = response.product.product_labels[0].value
+        doc = fh.get_product_by_id(doc_id=product_id).to_dict()
+        doc[constant.PRODUCT_ID] = product_id
+        resp = jsonify({constant.MESSAGE: "Product identified.", constant.DATA: doc})
+        resp.status_code = 200
+    else:
+        resp = jsonify({constant.MESSAGE: "Product not found"})
+        resp.status_code = 400
+    print("**************************************")
     return resp
 
 

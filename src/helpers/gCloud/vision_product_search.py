@@ -30,15 +30,8 @@ def get_similar_products_file(
     )
     image_context = vision.ImageContext(product_search_params=product_search_params)
     response = image_annotator_client.product_search(image, image_context=image_context)
-    print(response)
     results = response.product_search_results.results
-    # product_id_list = []
-    # for result in results:
-    #     product = result.product
-    #     split_image = result.image.split('/')
-    #     product_id_list.append(split_image[-1])
-    #return results[0].product.product_labels[0].value
-    return results[0].product.display_name
+    return results[0]
 
 
 def import_product_sets(project_id, location, gcs_uri):
