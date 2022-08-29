@@ -75,15 +75,22 @@ def validate_files_as_optional(files, file_type):
     return ""
 
 
-def is_duplicate_customer(bucket_name):
+def is_duplicate_customer(name):
     """
     Validate is customer is duplicate.
     """
-    if len(bucket_name) < 3:
-        bucket_name = bucket_name + "000"
-    doc_id_list = fh.get_customer_by_bucket_name(bucket_name)
-    if len(doc_id_list) == 0:
-        return len(doc_id_list)
+    bucket_name = "".join(char for char in name if char.isalnum()).lower()
+    list_customers = []
+    docs = fh.get_all_customers()
+    for doc in docs:
+        data = doc.to_dict()
+        customer_name = data[constant.NAME]
+        customer_name = "".join(
+            char for char in customer_name if char.isalnum()
+        ).lower()
+        list_customers.append(customer_name)
+    if bucket_name not in list_customers:
+        return 0
     resp = jsonify({constant.MESSAGE: constant.CUSTOMER_EXISTS_MESSAGE})
     resp.status_code = 400
     return resp
@@ -125,8 +132,10 @@ def create_customer():
         resp = jsonify({constant.MESSAGE: constant.NAME_NOT_BLANK})
         resp.status_code = 400
         return resp
+    customer_duplicate = is_duplicate_customer(name=name)
     bucket_name = "".join(char for char in name if char.isalnum()).lower()
-    customer_duplicate = is_duplicate_customer(bucket_name=bucket_name)
+    display_id = str(int(time.time())).split(".", maxsplit=1)[0]
+    bucket_name = display_id + "_" + bucket_name
     files = request.files
     logo_resp = validate_files_as_mandatory(
         files=files, file_type=constant.LOGO_FILE_PATH
@@ -145,9 +154,7 @@ def create_customer():
     customer_dict[constant.STATUS] = False
     customer_dict[constant.TRAINING_STATUS] = 0
     customer_dict[constant.IS_DELETED] = False
-    customer_dict[constant.CUSTOMER_DISPLAY_ID] = str(int(time.time())).split(
-        ".", maxsplit=1
-    )[0]
+    customer_dict[constant.CUSTOMER_DISPLAY_ID] = display_id
     if customer_duplicate == 0:
         bucket = sh.create_bucket(bucket_name)
         logo_file = files[constant.LOGO_FILE_PATH]
@@ -340,6 +347,7 @@ def get_customer_intents(customer_id):
     Returns a list of customer intents
     """
     return intents.get_intents(customer_id, "")
+
 
 @app.route(ROUTE + "/<customer_id>/intent/download", methods=["GET"])
 def download_customer_intents(customer_id):
