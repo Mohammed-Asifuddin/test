@@ -138,15 +138,16 @@ def update_intent(intent, intent_id):
     print(intent_ref)
     return response
 
-def delete_intent(intent_id, parent):
+def delete_intent(intent):
     """
     Makes the call to dialogFLow delete intent API
     """
     try:
         request = dialogflowcx_v3.DeleteIntentRequest(
-            name=f'{parent}/intents/{intent_id}',
+            name=intent,
         )
         client.delete_intent(request=request)
+        intent_id = intent.split("intents/")[1]
         db.collection('Intent').document(intent_id).delete()
     except Exception:
         traceback.print_exc()
@@ -168,19 +169,23 @@ def upsert_intent(intent_id, intent_name, intent_action, intent_desc, training_p
         part = Intent.TrainingPhrase.Part(text=phrase)
         phrases_array.append(Intent.TrainingPhrase(parts=[part], repeat_count=1))
     intent.training_phrases = phrases_array
-
-    if intent_action=="Create":
+    resp = ""
+    if intent_action=="":
+        return f'Skipping intent with {len(intent.training_phrases)} phrases.'
+    elif intent_action=="Create":
+        print(f'Creating {intent.display_name} with {len(intent.training_phrases)} phrases.')
         resp = create_intent(intent, parent, customer_id, product_id, agent_id)
     elif intent_action=="Update":
         intent.name = f'{parent}/intents/{intent_id}'
+        print(f'Updating {intent.display_name} with {len(intent.training_phrases)} phrases.')
         resp = update_intent(intent, intent_id)
     elif intent_action=="Delete":
-        intent_ids_to_delete.append(intent_id)
-        return ""
+        intent.name = f'{parent}/intents/{intent_id}'
+        intent_ids_to_delete.append(intent.name)
+        return f'Deleting {intent.display_name} with {len(intent.training_phrases)} phrases.'
     else:
-        print("Invalid Action in CSV.")
-        return ""
-    if resp and resp.name != "":
+        return f'Invalid Action {intent_action} in CSV.'
+    if resp!="" and resp.name!="":
         intent_responses[resp.name] = fulfillments
     return resp
 
@@ -267,12 +272,13 @@ def get_intents(customer_id, product_id):
     resp.status_code = 200
     return resp
 
-def update_flow(flow, intents):
+def update_flow(flow, intents, intent_ids_to_delete):
     """
     Updates the flow with all the intent routes
     """
     try:
-        flow.transition_routes = [route for route in flow.transition_routes if DEFAULT_INTENT_ID in route.intent]
+        #Removing intents marked for updation and deletion so that it only takes updated fulfillments
+        flow.transition_routes = [route for route in flow.transition_routes if route.intent not in intent_ids_to_delete and route.intent not in intents.keys()]
         for intent in intents:
             if DEFAULT_INTENT_ID in intent:
                 continue
@@ -321,14 +327,18 @@ def add_update_delete_intents(customer_id, product_id):
             response = ""
             intent_responses = {}
             intent_ids_to_delete = []
+            existing_intent = False
             for row in reader:
-                if row['Action']=="":
+                if row["Action"]=="" and row["ID"]!="" and len(training_phrases)>0:
+                    existing_intent = True
+                elif not existing_intent and row['Action']=="":
                     training_phrases.append(row['Training Phrases'])
                 else:
                     if training_phrases:
                         response = upsert_intent(intent_id, intent_name, intent_action, intent_desc, training_phrases, parent, customer_id, product_id, agent_id, fulfillments, intent_responses, intent_ids_to_delete)
                         print(response)
                         training_phrases.clear()
+                        existing_intent = False
                     training_phrases.append(row['Training Phrases'])
                     if row['ID'] is None or row['ID']=='':
                         intent_id = ""
@@ -344,12 +354,11 @@ def add_update_delete_intents(customer_id, product_id):
             flow_path = f'{parent}/flows/{DEFAULT_FLOW_ID}'
             flow_request = dialogflowcx_v3.GetFlowRequest(name=flow_path)
             flow = flows_client.get_flow(flow_request)
-            print(intent_responses)
-            update_flow(flow, intent_responses)
+            update_flow(flow, intent_responses, intent_ids_to_delete)
 
             #Deleting intents marked for deletion
-            for intent_id in intent_ids_to_delete:
-                delete_intent(intent_id, parent)
+            for intent in intent_ids_to_delete:
+                delete_intent(intent)
 
     except FileNotFoundError:
         traceback.print_exc()
