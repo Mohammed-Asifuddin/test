@@ -4,6 +4,8 @@ Google cloud storage file handler
 import time
 import datetime
 from google.cloud import storage
+from google import auth
+from google.auth.transport import requests
 
 
 def create_bucket(bucket_name):
@@ -59,11 +61,15 @@ def generate_download_signed_url_v4(bucket_name, blob_name):
     storage_client = storage.Client()
     bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(blob_name)
-
+    credentials, project_id = auth.default()
+    token_refresh = requests.Request()
+    credentials.refresh(token_refresh)
     url = blob.generate_signed_url(
         version="v4",
         expiration=datetime.timedelta(minutes=30),
         method="GET",
+        service_account_email=credentials.service_account_email,
+        access_token=credentials.token,
     )
     print("Generated GET signed URL")
     return url
