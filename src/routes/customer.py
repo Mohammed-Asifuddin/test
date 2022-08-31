@@ -252,11 +252,11 @@ def get_all_customer():
     for doc in docs:
         data = doc.to_dict()
         data[constant.CUSTOMER_ID] = doc.id
-        logo_file_path = data[constant.LOGO_FILE_PATH]
-        bucket_name = data[constant.BUCKET_NAME]
-        data[constant.LOGO_FILE_PATH] = sh.generate_download_signed_url_v4(
-            bucket_name=bucket_name, blob_name=logo_file_path
-        )
+        #logo_file_path = data[constant.LOGO_FILE_PATH]
+        #bucket_name = data[constant.BUCKET_NAME]
+        #data[constant.LOGO_FILE_PATH] = sh.generate_download_signed_url_v4(
+        #    bucket_name=bucket_name, blob_name=logo_file_path
+        #)
         list_data.append(data)
     resp = jsonify(list_data)
     return resp, status.HTTP_200_OK
@@ -272,11 +272,11 @@ def get_active_customer():
     for doc in docs:
         data = doc.to_dict()
         data[constant.CUSTOMER_ID] = doc.id
-        logo_file_path = data[constant.LOGO_FILE_PATH]
-        bucket_name = data[constant.BUCKET_NAME]
-        data[constant.LOGO_FILE_PATH] = sh.generate_download_signed_url_v4(
-            bucket_name=bucket_name, blob_name=logo_file_path
-        )
+        #logo_file_path = data[constant.LOGO_FILE_PATH]
+        #bucket_name = data[constant.BUCKET_NAME]
+        #data[constant.LOGO_FILE_PATH] = sh.generate_download_signed_url_v4(
+        #    bucket_name=bucket_name, blob_name=logo_file_path
+        #)
         list_data.append(data)
     if len(list_data) != 0:
         resp = jsonify(list_data[0])
