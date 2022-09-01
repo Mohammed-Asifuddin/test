@@ -51,12 +51,14 @@ def get_agent_id(customer_id, product_id):
             return doc.to_dict()['agent_id']
     return ""
 
-def get_customer_name(customer_id):
+def get_name_for_id(customer_id, product_id):
     """
     Returns customer name for a given customer ID
     """
     if customer_id != "":
         doc = db.collection('Customer').document(customer_id).get()
+    elif product_id != "":
+        doc = db.collection('Product').document(product_id).get()
     if doc.id:
         return doc.to_dict()['name']
     return ""
@@ -387,8 +389,8 @@ def download_to_csv(customer_id, product_id):
         intents = response.json['intents']
         header = ['ID', 'Name', 'Description', 'Training Phrases', 'Response', 'Action']
 
-        customer_name = get_customer_name(customer_id)
-        intent_path = f'/tmp/{customer_name}-Intents.csv'
+        name = get_name_for_id(customer_id, product_id)
+        intent_path = f'/tmp/{name}-Intents.csv'
 
         with open(intent_path, 'w',  encoding='UTF8') as csvfile:
             writer = csv.writer(csvfile)

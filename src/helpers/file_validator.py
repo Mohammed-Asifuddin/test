@@ -66,4 +66,7 @@ def upload_intent_file(customer_bucket_name, product_bucket_name, intent_file_pa
     intent_file_blob.upload_from_string(
         intent_file_path.read(), content_type=intent_file_path.content_type
     )
-    return intent_file_blob.public_url
+    intent_public_url = intent_file_blob.public_url
+    intent_url = "gs://" + customer_bucket_name + '/' + (intent_public_url.split(customer_bucket_name)[-1])[1:]
+
+    return intent_url

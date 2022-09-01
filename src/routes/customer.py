@@ -167,6 +167,7 @@ def create_customer():
         ):
             intent_file = files[constant.INTENT_FILE_PATH]
             intent_public_url = sh.upload_intent(bucket=bucket, intent_file=intent_file)
+            intent_public_url = 'gs://' + bucket_name + '/' + (intent_public_url.split(bucket_name)[-1])[1:]
             customer_dict[constant.INTENT_FILE_PATH] = intent_public_url
     else:
         return customer_duplicate
@@ -232,6 +233,7 @@ def update_customer():
         intent_file = files[constant.INTENT_FILE_PATH]
         if intent_file:
             intent_public_url = sh.upload_intent(bucket=bucket, intent_file=intent_file)
+            intent_public_url = 'gs://' + doc[constant.BUCKET_NAME] + '/' + (intent_public_url.split(doc[constant.BUCKET_NAME])[-1])[1:]
             doc[constant.INTENT_FILE_PATH] = intent_public_url
             is_updated = True
     else:
