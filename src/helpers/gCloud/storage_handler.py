@@ -57,7 +57,7 @@ def generate_download_signed_url_v4(bucket_name, blob_name):
     this if you are using Application Default Credentials from Google Compute
     Engine or from the Google Cloud SDK.
     """
-    # blob_name = (blob_name.split(bucket_name)[-1])[1:]
+    blob_name = (blob_name.split(bucket_name)[-1])[1:]
     credentials, project_id = auth.default()
     token_refresh = requests.Request()
     credentials.refresh(token_refresh)
