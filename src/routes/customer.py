@@ -167,7 +167,12 @@ def create_customer():
         ):
             intent_file = files[constant.INTENT_FILE_PATH]
             intent_public_url = sh.upload_intent(bucket=bucket, intent_file=intent_file)
-            intent_public_url = 'gs://' + bucket_name + '/' + (intent_public_url.split(bucket_name)[-1])[1:]
+            intent_public_url = (
+                "gs://"
+                + bucket_name
+                + "/"
+                + (intent_public_url.split(bucket_name)[-1])[1:]
+            )
             customer_dict[constant.INTENT_FILE_PATH] = intent_public_url
     else:
         return customer_duplicate
@@ -196,6 +201,7 @@ def update_customer():
     """
     update a customer
     """
+    print("Customer Update request received")
     if constant.CUSTOMER_ID not in request.form.keys():
         resp = jsonify({constant.MESSAGE: constant.CUSTOMER_MANDATORY})
         resp.status_code = 400
@@ -209,7 +215,6 @@ def update_customer():
     logo_resp = validate_files_as_optional(
         files=files, file_type=constant.LOGO_FILE_PATH
     )
-    is_updated = False
     if (
         logo_resp == ""
         and constant.LOGO_FILE_PATH in files
@@ -219,11 +224,15 @@ def update_customer():
         if logo_file:
             logo_public_url = sh.upload_logo(bucket=bucket, logo_file=logo_file)
             doc[constant.LOGO_FILE_PATH] = logo_public_url
-            is_updated = True
-    else:
-        return logo_resp
+    print("Before intent")
     intent_resp = validate_files_as_optional(
         files=files, file_type=constant.INTENT_FILE_PATH
+    )
+    print(intent_resp)
+    print(
+        intent_resp == ""
+        and constant.INTENT_FILE_PATH in files
+        and files[constant.INTENT_FILE_PATH].filename != ""
     )
     if (
         intent_resp == ""
@@ -233,16 +242,17 @@ def update_customer():
         intent_file = files[constant.INTENT_FILE_PATH]
         if intent_file:
             intent_public_url = sh.upload_intent(bucket=bucket, intent_file=intent_file)
-            intent_public_url = 'gs://' + doc[constant.BUCKET_NAME] + '/' + (intent_public_url.split(doc[constant.BUCKET_NAME])[-1])[1:]
+            intent_public_url = (
+                "gs://"
+                + doc[constant.BUCKET_NAME]
+                + "/"
+                + (intent_public_url.split(doc[constant.BUCKET_NAME])[-1])[1:]
+            )
             doc[constant.INTENT_FILE_PATH] = intent_public_url
-            is_updated = True
-    else:
-        return intent_resp
-    if is_updated:
-        fh.update_customer_by_id(doc_id=customer_id, doc_dict=doc)
-    # TODO : send pubsub notification to create Intent
+    fh.update_customer_by_id(doc_id=customer_id, doc_dict=doc)
     manage_customer_intents(customer_id)
     resp = jsonify({constant.MESSAGE: constant.CUSTOMER_UPDATED, constant.DATA: doc})
+    print("Customer Updated.")
     return resp, status.HTTP_200_OK
 
 
