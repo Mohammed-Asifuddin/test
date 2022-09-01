@@ -2,7 +2,7 @@
 Google cloud storage file handler
 """
 import time
-import datetime
+from datetime import datetime, timezone, timedelta
 from google.cloud import storage
 from google import auth
 from google.auth.transport import requests
@@ -57,19 +57,23 @@ def generate_download_signed_url_v4(bucket_name, blob_name):
     this if you are using Application Default Credentials from Google Compute
     Engine or from the Google Cloud SDK.
     """
-    blob_name = (blob_name.split(bucket_name)[-1])[1:]
-    storage_client = storage.Client()
-    bucket = storage_client.bucket(bucket_name)
-    blob = bucket.blob(blob_name)
+    # blob_name = (blob_name.split(bucket_name)[-1])[1:]
     credentials, project_id = auth.default()
     token_refresh = requests.Request()
     credentials.refresh(token_refresh)
-    url = blob.generate_signed_url(
-        version="v4",
-        expiration=datetime.timedelta(minutes=30),
-        method="GET",
-        service_account_email=credentials.service_account_email,
-        access_token=credentials.token,
-    )
-    print("Generated GET signed URL")
+    storage_client = storage.Client()
+    bucket = storage_client.get_bucket(bucket_name)
+    blob = bucket.get_blob(blob_name)
+    if blob:
+        now = datetime.now(timezone.utc)
+        expiration = now + timedelta(minutes=90)
+        url = blob.generate_signed_url(
+            version="v4",
+            expiration=expiration,
+            method="GET",
+            service_account_email=credentials.service_account_email,
+            access_token=credentials.token,
+        )
+    else:
+        url = None
     return url
