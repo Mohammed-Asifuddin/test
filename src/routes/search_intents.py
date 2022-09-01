@@ -12,7 +12,7 @@ from src.helpers.gCloud import firestore_helper as fsh
 ROUTE = "/detectIntent"
 
 
-@app.route(ROUTE, methods=["GET"])
+@app.route(ROUTE, methods=["POST"])
 def detect_intent():
     """
     Returns the fulfillment text corresponding the intent
