@@ -139,3 +139,16 @@ def get_all_product_categories():
     Return All product categories
     """
     return db.collection(TABLE_PRODUCT_CATEGORY).stream()
+
+
+def get_agent_id_by_customer_id(customer_id):
+    """
+    Returns the respective agent ID stored in FS for the customer
+    """
+    docs = ""
+    if customer_id != "":
+        docs = db.collection(TABLE_AGENT).where(constant.CUSTOMER_ID, '==', customer_id).stream()
+    for doc in docs:
+        if doc.id:
+            return doc.to_dict()[constant.AGENT_ID]
+    return ""

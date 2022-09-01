@@ -4,26 +4,34 @@ Search Intent API
 
 import os, time, uuid, sys
 from google.cloud import dialogflowcx_v3 as df
-from flask import Flask, request
-
-app = Flask(__name__)
+from flask import request, jsonify
+from src import app
+from src.helpers import constant
+from src.helpers.gCloud import firestore_helper as fsh
 
 ROUTE = "/detectIntent"
-@app.route(ROUTE, methods=["POST"])
 
+@app.route(ROUTE, methods=["GET"])
 def detect_intent():
     '''
     Retuns the fulfillment text corresponding the intent
     '''
-    project_id = os.environ["GCP_PROJECT"]
+    project_id = constant.PROJECT_ID
     location_id = "global"
-    agent_id = ""
+
+    if constant.CUSTOMER_ID not in request.form.keys():
+        resp = jsonify({constant.MESSAGE: constant.CUSTOMER_MANDATORY})
+        resp.status_code = 400
+        return resp
+    customer_id = request.form[constant.CUSTOMER_ID]
+    agent_id = fsh.get_agent_id_by_customer_id(customer_id)
+
     agent = f"projects/{project_id}/locations/{location_id}/agents/{agent_id}"
     data = request.form
     #print(data['text_input'])
     text_input = data['text_input']
     try:
-        text_input = text_input[:255] #dialog 
+        text_input = text_input[:255] #dialog
         DIALOGFLOW_LANGUAGE_CODE = "en"
         SESSION_ID = uuid.uuid4()
         session_path = f"{agent}/sessions/{SESSION_ID}"
