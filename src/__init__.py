@@ -9,4 +9,11 @@ app = Flask(__name__)
 
 CORS(app)
 
-from src.routes import health, user_search, customer, product, product_training
+from src.routes import (
+    health,
+    user_search,
+    customer,
+    product,
+    product_training,
+    search_intents,
+)
