@@ -75,6 +75,7 @@ def add_product():
                 )
             new_doc = fsh.add_product(product_dict=product_dict)
             product_dict[constant.PRODUCT_ID] = new_doc[-1].id
+            manage_product_intents(product_dict[constant.PRODUCT_ID])
         else:
             return product_duplicate
     else:
@@ -151,6 +152,7 @@ def update_product():
         )
         doc[constant.INTENT_FILE_PATH] = intent_file_public_url
     fsh.update_product_by_id(doc_id=product_id, doc_dict=doc)
+    manage_product_intents(product_id)
     resp = jsonify(
         {constant.MESSAGE: constant.PRODUCT_UPDATE_MESSAGE, constant.DATA: doc}
     )

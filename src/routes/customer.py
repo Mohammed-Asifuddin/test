@@ -179,6 +179,7 @@ def create_customer():
     agent_dict[constant.DISPLAY_NAME] = name
     fh.add_agent(agent_dict=agent_dict)
     # TODO : send pubsub notification to create Intent
+    manage_customer_intents(customer_dict[constant.CUSTOMER_ID])
     resp = jsonify(
         {
             constant.MESSAGE: constant.CUSTOMER_SUCCESS_MESSAGE,
@@ -238,6 +239,7 @@ def update_customer():
     if is_updated:
         fh.update_customer_by_id(doc_id=customer_id, doc_dict=doc)
     # TODO : send pubsub notification to create Intent
+    manage_customer_intents(customer_id)
     resp = jsonify({constant.MESSAGE: constant.CUSTOMER_UPDATED, constant.DATA: doc})
     return resp, status.HTTP_200_OK
 
