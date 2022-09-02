@@ -26,7 +26,7 @@ def get_bucket_object_by_name(bucket_name):
     return storage_client.bucket(bucket_name)
 
 
-def upload_logo(bucket, logo_file):
+def upload_logo(bucket, logo_file, bucket_name):
     """
     Create a new bucket in storage
     """
@@ -35,11 +35,11 @@ def upload_logo(bucket, logo_file):
     file_name = "logo/" + timestamp + logo_file.filename
     logo_blob = bucket.blob(file_name)
     logo_blob.upload_from_string(logo_file.read(), content_type=logo_file.content_type)
-    url = "gs://" + bucket + "/" + file_name
+    url = "gs://" + bucket_name + "/" + file_name
     return url
 
 
-def upload_intent(bucket, intent_file):
+def upload_intent(bucket, intent_file, bucket_name):
     """
     Create a new bucket in storage
     """
@@ -50,7 +50,7 @@ def upload_intent(bucket, intent_file):
     intent_blob.upload_from_string(
         intent_file.read(), content_type=intent_file.content_type
     )
-    url = "gs://" + bucket + "/" + file_name
+    url = "gs://" + bucket_name + "/" + file_name
     return url
 
 

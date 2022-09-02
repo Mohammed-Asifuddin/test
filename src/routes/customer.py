@@ -158,7 +158,9 @@ def create_customer():
     if customer_duplicate == 0:
         bucket = sh.create_bucket(bucket_name)
         logo_file = files[constant.LOGO_FILE_PATH]
-        logo_public_url = sh.upload_logo(bucket=bucket, logo_file=logo_file)
+        logo_public_url = sh.upload_logo(
+            bucket=bucket, logo_file=logo_file, bucket_name=bucket_name
+        )
         customer_dict[constant.LOGO_FILE_PATH] = logo_public_url
         if (
             (constant.INTENT_FILE_PATH in files)
@@ -167,7 +169,7 @@ def create_customer():
         ):
             intent_file = files[constant.INTENT_FILE_PATH]
             customer_dict[constant.INTENT_FILE_PATH] = sh.upload_intent(
-                bucket=bucket, intent_file=intent_file
+                bucket=bucket, intent_file=intent_file, bucket_name=bucket_name
             )
     else:
         return customer_duplicate
@@ -216,7 +218,11 @@ def update_customer():
     ):
         logo_file = files[constant.LOGO_FILE_PATH]
         if logo_file:
-            logo_public_url = sh.upload_logo(bucket=bucket, logo_file=logo_file)
+            logo_public_url = sh.upload_logo(
+                bucket=bucket,
+                logo_file=logo_file,
+                bucket_name=doc[constant.BUCKET_NAME],
+            )
             doc[constant.LOGO_FILE_PATH] = logo_public_url
     print("Before intent")
     intent_resp = validate_files_as_optional(
@@ -236,7 +242,9 @@ def update_customer():
         intent_file = files[constant.INTENT_FILE_PATH]
         if intent_file:
             doc[constant.INTENT_FILE_PATH] = sh.upload_intent(
-                bucket=bucket, intent_file=intent_file
+                bucket=bucket,
+                intent_file=intent_file,
+                bucket_name=doc[constant.BUCKET_NAME],
             )
     fh.update_customer_by_id(doc_id=customer_id, doc_dict=doc)
     manage_customer_intents(customer_id)
