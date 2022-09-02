@@ -174,6 +174,11 @@ def get_all_products():
             bucket_name=data[constant.CUSTOMER_BUCKET_NAME],
             blob_name=data[constant.VIDEO_FILE_PATH],
         )
+        if constant.INTENT_FILE_PATH in data.keys():
+            data[constant.INTENT_FILE_PATH] = sh.generate_download_signed_url_v4(
+                bucket_name=data[constant.CUSTOMER_BUCKET_NAME],
+                blob_name=data[constant.INTENT_FILE_PATH],
+            )
         list_data.append(data)
     resp = jsonify(list_data)
     return resp, status.HTTP_200_OK
