@@ -166,14 +166,9 @@ def create_customer():
             and (files[constant.INTENT_FILE_PATH].filename != "")
         ):
             intent_file = files[constant.INTENT_FILE_PATH]
-            intent_public_url = sh.upload_intent(bucket=bucket, intent_file=intent_file)
-            intent_public_url = (
-                "gs://"
-                + bucket_name
-                + "/"
-                + (intent_public_url.split(bucket_name)[-1])[1:]
+            customer_dict[constant.INTENT_FILE_PATH] = sh.upload_intent(
+                bucket=bucket, intent_file=intent_file
             )
-            customer_dict[constant.INTENT_FILE_PATH] = intent_public_url
     else:
         return customer_duplicate
     doc = fh.add_customer(customer_dict=customer_dict)
@@ -184,7 +179,6 @@ def create_customer():
     agent_dict[constant.AGENT_ID] = (agent_response.name.split("/"))[-1]
     agent_dict[constant.DISPLAY_NAME] = name
     fh.add_agent(agent_dict=agent_dict)
-    # TODO : send pubsub notification to create Intent
     manage_customer_intents(customer_dict[constant.CUSTOMER_ID])
     resp = jsonify(
         {
@@ -241,14 +235,9 @@ def update_customer():
     ):
         intent_file = files[constant.INTENT_FILE_PATH]
         if intent_file:
-            intent_public_url = sh.upload_intent(bucket=bucket, intent_file=intent_file)
-            intent_public_url = (
-                "gs://"
-                + doc[constant.BUCKET_NAME]
-                + "/"
-                + (intent_public_url.split(doc[constant.BUCKET_NAME])[-1])[1:]
+            doc[constant.INTENT_FILE_PATH] = sh.upload_intent(
+                bucket=bucket, intent_file=intent_file
             )
-            doc[constant.INTENT_FILE_PATH] = intent_public_url
     fh.update_customer_by_id(doc_id=customer_id, doc_dict=doc)
     manage_customer_intents(customer_id)
     resp = jsonify({constant.MESSAGE: constant.CUSTOMER_UPDATED, constant.DATA: doc})

@@ -4,7 +4,8 @@ Search Intent API
 
 import os, time, uuid, sys
 from google.cloud import dialogflowcx_v3 as df
-from flask import request, jsonify
+from flask_cors import cross_origin
+from flask import request
 from src import app
 from src.helpers import constant
 from src.helpers.gCloud import firestore_helper as fsh
@@ -14,6 +15,7 @@ ROUTE = "/detectIntent"
 
 
 @app.route(ROUTE, methods=["POST"])
+@cross_origin()
 def detect_intent():
     """
     Returns the fulfillment text corresponding the intent
@@ -53,4 +55,7 @@ def detect_intent():
         print("exception while input")
         print(text_input)
         print("Unexpected error:", sys.exc_info()[0])
-        return {"success": False, "message": "Error while getting fulfillments."}, status.HTTP_400_BAD_REQUEST
+        return {
+            "success": False,
+            "message": "Error while getting fulfillments.",
+        }, status.HTTP_400_BAD_REQUEST

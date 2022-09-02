@@ -32,9 +32,11 @@ def upload_logo(bucket, logo_file):
     """
     timestamp = str(int(time.time())).split(".", maxsplit=1)[0]
     timestamp = timestamp + "_"
-    logo_blob = bucket.blob("logo/" + timestamp + logo_file.filename)
+    file_name = "logo/" + timestamp + logo_file.filename
+    logo_blob = bucket.blob(file_name)
     logo_blob.upload_from_string(logo_file.read(), content_type=logo_file.content_type)
-    return logo_blob.public_url
+    url = "gs://" + bucket + "/" + file_name
+    return url
 
 
 def upload_intent(bucket, intent_file):
@@ -43,11 +45,13 @@ def upload_intent(bucket, intent_file):
     """
     timestamp = str(int(time.time())).split(".", maxsplit=1)[0]
     timestamp = timestamp + "_"
-    intent_blob = bucket.blob("intent/" + timestamp + intent_file.filename)
+    file_name = "intent/" + timestamp + intent_file.filename
+    intent_blob = bucket.blob(file_name)
     intent_blob.upload_from_string(
         intent_file.read(), content_type=intent_file.content_type
     )
-    return intent_blob.public_url
+    url = "gs://" + bucket + "/" + file_name
+    return url
 
 
 def generate_download_signed_url_v4(bucket_name, blob_name):
@@ -58,12 +62,14 @@ def generate_download_signed_url_v4(bucket_name, blob_name):
     Engine or from the Google Cloud SDK.
     """
     blob_name = (blob_name.split(bucket_name)[-1])[1:]
+    print(blob_name)
     credentials, project_id = auth.default()
     token_refresh = requests.Request()
     credentials.refresh(token_refresh)
     storage_client = storage.Client()
     bucket = storage_client.get_bucket(bucket_name)
     blob = bucket.get_blob(blob_name)
+    # print(blob)
     if blob:
         now = datetime.now(timezone.utc)
         expiration = now + timedelta(minutes=90)
