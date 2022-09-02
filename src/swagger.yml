@@ -2,11 +2,10 @@ swagger: "2.0"
 info:
   version: "1.0.0"
   title: "Beyond The Label"
-host: "localhost"
-basePath: "/btl"
+host: "stage-btl-api-prototype-wv4ery7kba-uw.a.run.app"
+basePath: "/"
 schemes:
 - "https"
-- "http"
 paths:
   /customer:
     post:
