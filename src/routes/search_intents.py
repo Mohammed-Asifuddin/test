@@ -8,12 +8,14 @@ from flask import request, jsonify
 from src import app
 from src.helpers import constant
 from src.helpers.gCloud import firestore_helper as fsh
+from flask_cors import cross_origin
 from flask_api import status
 
 ROUTE = "/detectIntent"
 
 
 @app.route(ROUTE, methods=["POST"])
+@cross_origin()
 def detect_intent():
     """
     Returns the fulfillment text corresponding the intent
