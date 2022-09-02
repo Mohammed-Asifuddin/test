@@ -9,6 +9,7 @@ from flask import request
 from src import app
 from src.helpers import constant
 from src.helpers.gCloud import firestore_helper as fsh
+from flask_cors import cross_origin
 from flask_api import status
 
 ROUTE = "/detectIntent"
