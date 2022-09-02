@@ -59,8 +59,8 @@ def generate_download_signed_url_v4(bucket_name, blob_name):
     """
     blob_name = (blob_name.split(bucket_name)[-1])[1:]
     credentials, project_id = auth.default()
-    token_refresh = requests.Request()
-    credentials.refresh(token_refresh)
+    """ token_refresh = requests.Request()
+    credentials.refresh(token_refresh) """
     storage_client = storage.Client()
     bucket = storage_client.get_bucket(bucket_name)
     blob = bucket.get_blob(blob_name)

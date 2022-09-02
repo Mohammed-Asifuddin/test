@@ -12,6 +12,7 @@ from src.helpers import file_validator as fv
 from src.routes import customer, intents
 from src.helpers import constant
 from src.helpers.gCloud import pubsub_helper as psh
+from src.helpers.gCloud import storage_handler as sh
 
 ROUTE = "/product"
 
@@ -169,6 +170,10 @@ def get_all_products():
     for doc in docs:
         data = doc.to_dict()
         data[constant.PRODUCT_ID] = doc.id
+        data[constant.VIDEO_FILE_PATH] = sh.generate_download_signed_url_v4(
+            bucket_name=data[constant.CUSTOMER_BUCKET_NAME],
+            blob_name=data[constant.VIDEO_FILE_PATH],
+        )
         list_data.append(data)
     resp = jsonify(list_data)
     return resp, status.HTTP_200_OK
@@ -230,6 +235,7 @@ def get_product_intents(product_id):
     Returns a list of product intents
     """
     return intents.get_intents("", product_id)
+
 
 @app.route(ROUTE + "/<product_id>/intent/download", methods=["GET"])
 def download_product_intents(product_id):
