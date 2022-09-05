@@ -29,14 +29,20 @@ def search_product():
         product_categories=product_categories,
         image_uri=image_data,
     )
-    if response.score >= 0.65:
+    if hasattr(response, 'error'):
+        resp = jsonify({constant.MESSAGE: response.error.message})
+        resp.status_code = 400
+        return resp
+    if  hasattr(response, 'score') and response.score >= 0.65:
         product_id = response.product.product_labels[0].value
         doc = fh.get_product_by_id(doc_id=product_id).to_dict()
         doc[constant.PRODUCT_ID] = product_id
-        resp = jsonify({constant.MESSAGE: "Product identified.", constant.DATA: doc})
+        resp = jsonify(
+            {constant.MESSAGE: "Product identified.", constant.DATA: doc})
         resp.status_code = 200
     else:
-        resp = jsonify({constant.MESSAGE: "Product not found"})
+        resp = jsonify(
+            {constant.MESSAGE: "Product not found"})
         resp.status_code = 400
     return resp
 

@@ -17,10 +17,14 @@ def get_similar_products_file(
     product_search_params = vision.ProductSearchParams(
         product_set=product_set_path, product_categories=product_categories
     )
-    image_context = vision.ImageContext(product_search_params=product_search_params)
-    response = image_annotator_client.product_search(image, image_context=image_context)
+    image_context = vision.ImageContext(
+        product_search_params=product_search_params)
+    response = image_annotator_client.product_search(
+        image, image_context=image_context)
     results = response.product_search_results.results
-    return results[0]
+    if len(results) >= 1:
+        return results[0]
+    return response
 
 
 def import_product_sets(project_id, location, gcs_uri):
