@@ -12,7 +12,7 @@ import firebase_admin
 from firebase_admin import firestore
 import gcsfs
 
-PROJECT_ID = "retail-btl-dev"
+PROJECT_ID = "retail-btl-uat"
 LOCATION_ID = "global"
 DEFAULT_FLOW_ID = "00000000-0000-0000-0000-000000000000"
 DEFAULT_INTENT_ID = "00000000-0000-0000"

@@ -12,7 +12,7 @@ def push_to_pubsub(product_id, video_file_path):
     """
     Push notification into pubsub topic
     """
-    project_id = os.getenv("PROJECT_ID", "retail-btl-dev")
+    project_id = os.getenv("PROJECT_ID", "retail-btl-uat")
     topic_id = get_topic_id_video_to_image()
     data_dict = {}
     data_dict[constant.PRODUCT_ID] = product_id

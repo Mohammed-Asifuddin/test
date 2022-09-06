@@ -20,7 +20,7 @@ def search_product():
         active_customer[constant.CUSTOMER_ID]
     )
     product_categories = [*set(product_categories)]
-    project_id = os.getenv("PROJECT_ID", "retail-btl-dev")
+    project_id = os.getenv("PROJECT_ID", "retail-btl-uat")
     location = "us-west1"
     response = vps.get_similar_products_file(
         project_id=project_id,
