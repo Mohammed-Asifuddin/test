@@ -13,12 +13,14 @@ from src.routes import customer, intents
 from src.helpers import constant
 from src.helpers.gCloud import pubsub_helper as psh
 from src.helpers.gCloud import storage_handler as sh
+from src.security.authorize import authorize
 
 ROUTE = "/product"
 
 
 @app.route(ROUTE, methods=["POST"])
 @cross_origin()
+@authorize()
 def add_product():
     """
     Add new product
@@ -93,6 +95,7 @@ def add_product():
 
 @app.route(ROUTE, methods=["PUT"])
 @cross_origin()
+@authorize()
 def update_product():
     """
     Update product
@@ -161,6 +164,7 @@ def update_product():
 
 
 @app.route(ROUTE, methods=["GET"])
+@authorize()
 def get_all_products():
     """
     Get all products data
@@ -185,6 +189,7 @@ def get_all_products():
 
 
 @app.route(ROUTE + "/<product_id>", methods=["DELETE"])
+@authorize()
 def delete_product(product_id):
     """
     Delete product data
@@ -211,6 +216,7 @@ def delete_product(product_id):
 
 
 @app.route(ROUTE + "/categories", methods=["GET"])
+@authorize()
 def get_all_products_categories():
     """
     Get all products data
@@ -235,6 +241,7 @@ def manage_product_intents(product_id):
 
 
 @app.route(ROUTE + "/<product_id>/intent", methods=["GET"])
+@authorize()
 def get_product_intents(product_id):
     """
     Returns a list of product intents

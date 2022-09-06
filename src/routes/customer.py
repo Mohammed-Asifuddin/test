@@ -13,6 +13,7 @@ from src.helpers.gCloud import firestore_helper as fh
 from src.helpers.gCloud import dialogflow as df
 from src.helpers import constant
 from src.routes import intents
+from src.security.authorize import authorize
 
 ROUTE = "/customer"
 
@@ -119,6 +120,7 @@ def customer_id_validation(customer_id):
 
 @app.route(ROUTE, methods=["POST"])
 @cross_origin()
+@authorize()
 def create_customer():
     """
     Create a new customer
@@ -193,6 +195,7 @@ def create_customer():
 
 @app.route(ROUTE, methods=["PUT"])
 @cross_origin()
+@authorize()
 def update_customer():
     """
     update a customer
@@ -254,6 +257,7 @@ def update_customer():
 
 
 @app.route(ROUTE, methods=["GET"])
+@authorize()
 def get_all_customer():
     """
     Get all customers data
@@ -305,6 +309,7 @@ def get_active_customer():
 
 
 @app.route(ROUTE + "/<customer_id>", methods=["DELETE"])
+@authorize()
 def delete_customer(customer_id):
     """
     Delete customers data
@@ -320,6 +325,7 @@ def delete_customer(customer_id):
 
 
 @app.route(ROUTE + "/status", methods=["PUT"])
+@authorize()
 def update_customer_status():
     """
     Update customers status
@@ -371,6 +377,7 @@ def manage_customer_intents(customer_id):
 
 
 @app.route(ROUTE + "/<customer_id>/intent", methods=["GET"])
+@authorize()
 def get_customer_intents(customer_id):
     """
     Returns a list of customer intents
