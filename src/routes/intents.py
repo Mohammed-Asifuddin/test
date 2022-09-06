@@ -16,6 +16,28 @@ PROJECT_ID = "retail-btl-dev"
 LOCATION_ID = "global"
 DEFAULT_FLOW_ID = "00000000-0000-0000-0000-000000000000"
 DEFAULT_INTENT_ID = "00000000-0000-0000"
+TRAINING_PHRASES = "Training Phrases"
+CUSTOMER_COLLECTION = "Customer"
+PRODUCT_COLLECTION = "Product"
+AGENT_COLLECTION = "Agent"
+INTENT_COLLECTION = "Intent"
+CUSTOMER_ID = "customer_id"
+PRODUCT_ID = "product_id"
+AGENT_ID = "agent_id"
+MASKED_INTENT_IDS = "maskedIntentId"
+CREATE = "Create"
+UPDATE = "Update"
+DELETE = "Delete"
+COLUMN_ID = "ID"
+COLUMN_NAME = "Name"
+COLUMN_DESCRIPTION = "Description"
+COLUMN_RESPONSE = "Response"
+COLUMN_ACTION = "Action"
+INTENT_DISPLAY_NAME = "display_name"
+INTENT_TRAINING_PHRASES = "training_phrases"
+INTENT_FULFILLMENTS = "fulfillments"
+INTENT_COLLECTION_NAME_FIELD = "name"
+STRING_INTENT_PATH = "intents/"
 
 firebase_admin.initialize_app()
 db = firestore.client()
@@ -27,9 +49,9 @@ def get_intent_path(customer_id, product_id):
     Returns the path stored in FS where the intent file is located
     """
     if customer_id != "":
-        doc = db.collection('Customer').document(customer_id).get()
+        doc = db.collection(CUSTOMER_COLLECTION).document(customer_id).get()
     elif product_id != "":
-        doc = db.collection('Product').document(product_id).get()
+        doc = db.collection(PRODUCT_COLLECTION).document(product_id).get()
     if doc.id:
         return doc.to_dict()['intent_file_path']
     return ""
@@ -41,14 +63,14 @@ def get_agent_id(customer_id, product_id):
     cust_id = customer_id
     docs = ""
     if product_id != "":
-        doc = db.collection('Product').document(product_id).get()
+        doc = db.collection(PRODUCT_COLLECTION).document(product_id).get()
         if doc.id:
-            cust_id = doc.to_dict()['customer_id']
+            cust_id = doc.to_dict()[CUSTOMER_ID]
     if cust_id != "":
-        docs = db.collection('Agent').where('customer_id', '==', cust_id).stream()
+        docs = db.collection(AGENT_COLLECTION).where(CUSTOMER_ID, '==', cust_id).stream()
     for doc in docs:
         if doc.id:
-            return doc.to_dict()['agent_id']
+            return doc.to_dict()[AGENT_ID]
     return ""
 
 def get_name_for_id(customer_id, product_id):
@@ -56,9 +78,9 @@ def get_name_for_id(customer_id, product_id):
     Returns customer name for a given customer ID
     """
     if customer_id != "":
-        doc = db.collection('Customer').document(customer_id).get()
+        doc = db.collection(CUSTOMER_COLLECTION).document(customer_id).get()
     elif product_id != "":
-        doc = db.collection('Product').document(product_id).get()
+        doc = db.collection(PRODUCT_COLLECTION).document(product_id).get()
     if doc.id:
         return doc.to_dict()['name']
     return ""
@@ -69,12 +91,12 @@ def get_masked_intent_ids(customer_id, product_id):
     """
     intent_ids = {}
     if customer_id != "":
-        docs = db.collection('Intent').where('customer_id', '==', customer_id).stream()
+        docs = db.collection(INTENT_COLLECTION).where(CUSTOMER_ID, '==', customer_id).stream()
     elif product_id != "":
-        docs = db.collection('Intent').where('product_id', '==', product_id).stream()
+        docs = db.collection(INTENT_COLLECTION).where(PRODUCT_ID, '==', product_id).stream()
     for doc in docs:
         if doc.id:
-            intent_ids[doc.id] = doc.to_dict()['maskedIntentId']
+            intent_ids[doc.id] = doc.to_dict()[MASKED_INTENT_IDS]
     return intent_ids
 
 def get_actual_intent_ids(customer_id, product_id):
@@ -83,12 +105,12 @@ def get_actual_intent_ids(customer_id, product_id):
     """
     intent_ids = {}
     if customer_id != "":
-        docs = db.collection('Intent').where('customer_id', '==', customer_id).stream()
+        docs = db.collection(INTENT_COLLECTION).where(CUSTOMER_ID, '==', customer_id).stream()
     elif product_id != "":
-        docs = db.collection('Intent').where('product_id', '==', product_id).stream()
+        docs = db.collection(INTENT_COLLECTION).where(PRODUCT_ID, '==', product_id).stream()
     for doc in docs:
         if doc.id:
-            intent_ids[doc.to_dict()['maskedIntentId']] = doc.id
+            intent_ids[doc.to_dict()[MASKED_INTENT_IDS]] = doc.id
     return intent_ids
 
 def create_intent(intent, parent, customer_id, product_id, agent_id):
@@ -107,18 +129,18 @@ def create_intent(intent, parent, customer_id, product_id, agent_id):
         resp.status_code = 400
         return resp
 
-    intent_id = response.name.split("intents/")[1]
-    intent_ref = db.collection('Intent').document(intent_id).set({
-        'agent_id' : agent_id,
-        'customer_id' : customer_id,
-        'name' : intent.display_name,
-        'product_id' : product_id,
-        'maskedIntentId': datetime.now().strftime('%Y%m-%d%H-%M%S-') + intent_id[-4:]
+    intent_id = response.name.split(STRING_INTENT_PATH)[1]
+    intent_ref = db.collection(INTENT_COLLECTION).document(intent_id).set({
+        AGENT_ID : agent_id,
+        CUSTOMER_ID : customer_id,
+        INTENT_COLLECTION_NAME_FIELD : intent.display_name,
+        PRODUCT_ID : product_id,
+        MASKED_INTENT_IDS: datetime.now().strftime('%Y%m-%d%H-%M%S-') + intent_id[-4:]
     }, merge=True)
     print(intent_ref)
     return response
 
-def update_intent(intent, intent_id):
+def update_intent(intent):
     """
     Makes the call to dialogFLow update intent API
     """
@@ -133,9 +155,9 @@ def update_intent(intent, intent_id):
         resp.status_code = 400
         return resp
     intent_name = response.display_name
-    intent_id = response.name.split("intents/")[1]
-    intent_ref = db.collection('Intent').document(intent_id).update({
-        'name' : intent_name,
+    intent_id = response.name.split(STRING_INTENT_PATH)[1]
+    intent_ref = db.collection(INTENT_COLLECTION).document(intent_id).update({
+        INTENT_COLLECTION_NAME_FIELD : intent_name,
     })
     print(intent_ref)
     return response
@@ -149,8 +171,8 @@ def delete_intent(intent):
             name=intent,
         )
         client.delete_intent(request=request)
-        intent_id = intent.split("intents/")[1]
-        db.collection('Intent').document(intent_id).delete()
+        intent_id = intent.split(STRING_INTENT_PATH)[1]
+        db.collection(INTENT_COLLECTION).document(intent_id).delete()
     except Exception:
         traceback.print_exc()
         resp = jsonify({"message": "Intent deletion failed!"})
@@ -174,14 +196,14 @@ def upsert_intent(intent_id, intent_name, intent_action, intent_desc, training_p
     resp = ""
     if intent_action=="":
         return f'Skipping intent with {len(intent.training_phrases)} phrases.'
-    elif intent_action=="Create":
+    elif intent_action==CREATE:
         print(f'Creating {intent.display_name} with {len(intent.training_phrases)} phrases.')
         resp = create_intent(intent, parent, customer_id, product_id, agent_id)
-    elif intent_action=="Update":
+    elif intent_action==UPDATE:
         intent.name = f'{parent}/intents/{intent_id}'
         print(f'Updating {intent.display_name} with {len(intent.training_phrases)} phrases.')
-        resp = update_intent(intent, intent_id)
-    elif intent_action=="Delete":
+        resp = update_intent(intent)
+    elif intent_action==DELETE:
         intent.name = f'{parent}/intents/{intent_id}'
         intent_ids_to_delete.append(intent.name)
         return f'Deleting {intent.display_name} with {len(intent.training_phrases)} phrases.'
@@ -190,6 +212,50 @@ def upsert_intent(intent_id, intent_name, intent_action, intent_desc, training_p
     if resp!="" and resp.name!="":
         intent_responses[resp.name] = fulfillments
     return resp
+
+
+def get_intents_data(intents, intent_ids, fullfillments):
+    """
+        Prepares and returns intents for a list of intent IDs
+    """
+    resp_intents = []
+    for intent in intents:
+        if intent.display_name in ("Default Welcome Intent", "Default Negative Intent"):
+            continue
+        if intent.name.split(STRING_INTENT_PATH)[1] not in intent_ids:
+            continue
+        try:
+            request = dialogflowcx_v3.GetIntentRequest(
+                name= intent.name,
+            )
+            response = client.get_intent(request=request)
+            print(response)
+        except Exception:
+            print("There was an error while fetching an intent from DialogFlow!")
+            traceback.print_exc()
+            resp = jsonify({"message": "There was an error while fetching an intent from DialogFlow!"})
+            resp.status_code = 400
+            return resp
+
+        intent = {}
+        intent_id = response.name.split(STRING_INTENT_PATH)[1]
+        intent[MASKED_INTENT_IDS] = "" if intent_ids.get(intent_id) is None else intent_ids.get(intent_id)
+        intent[INTENT_DISPLAY_NAME] = response.display_name
+        intent[COLUMN_DESCRIPTION] = response.description
+        phrases = []
+        for phrase in response.training_phrases:
+            phrase_dict = {}
+            phrase_dict['repeat_count'] = phrase.repeat_count
+            phrase_dict['id'] = phrase.id
+            for part in phrase.parts:
+                phrase_dict['parts'] = [{'text': part.text}]
+            phrases.append(phrase_dict)
+        intent[INTENT_TRAINING_PHRASES] = phrases
+        intent[INTENT_FULFILLMENTS] = fullfillments[response.name]
+        # print(intentDict)
+        resp_intents.append(intent)
+    return resp_intents
+
 
 def get_intents(customer_id, product_id):
     """
@@ -224,44 +290,9 @@ def get_intents(customer_id, product_id):
             if DEFAULT_INTENT_ID not in route.intent:
                 fullfillments[route.intent] = route.trigger_fulfillment.messages[0].text.text[0]
 
-        resp_intents = []
         intent_ids = get_masked_intent_ids(customer_id, product_id)
-        for intent in intents:
-            if intent.display_name in ("Default Welcome Intent", "Default Negative Intent"):
-                continue
-            if intent.name.split("intents/")[1] not in intent_ids:
-                continue
-            try:
-                request = dialogflowcx_v3.GetIntentRequest(
-                    name= intent.name,
-                )
-                response = client.get_intent(request=request)
-                print(response)
-            except Exception:
-                print("There was an error while fetching an intent from DialogFlow!")
-                traceback.print_exc()
-                resp = jsonify({"message": "There was an error while fetching an intent from DialogFlow!"})
-                resp.status_code = 400
-                return resp
+        resp_intents = get_intents_data(intents, intent_ids, fullfillments)
 
-            intent = {}
-            intent_id = response.name.split("intents/")[1]
-            intent['maskedIntentId'] = "" if intent_ids.get(intent_id) is None else intent_ids.get(intent_id)
-            intent['display_name'] = response.display_name
-            intent['description'] = response.description
-            phrases = []
-            for phrase in response.training_phrases:
-                phrase_dict = {}
-                phrase_dict['repeat_count'] = phrase.repeat_count
-                phrase_dict['id'] = phrase.id
-                for part in phrase.parts:
-                    phrase_dict['parts'] = [{'text': part.text}]
-                phrases.append(phrase_dict)
-            intent['training_phrases'] = phrases
-            intent['fulfillments'] = fullfillments[response.name]
-            # print(intentDict)
-            resp_intents.append(intent)
-        # print(intentArray)
     except Exception:
         traceback.print_exc()
         print("There was an error while building intents response!")
@@ -331,36 +362,36 @@ def add_update_delete_intents(customer_id, product_id):
             intent_ids_to_delete = []
             existing_intent = False
             for row in reader:
-                if row["Action"]=="" and row["ID"]!="" and len(training_phrases)>0:
+                if row[COLUMN_ACTION]=="" and row[COLUMN_ID]!="" and len(training_phrases)>0:
                     existing_intent = True
-                elif not existing_intent and row['Action']=="":
-                    training_phrases.append(row['Training Phrases'])
+                elif not existing_intent and row[COLUMN_ACTION]=="":
+                    training_phrases.append(row[TRAINING_PHRASES])
                 else:
                     if training_phrases:
                         response = upsert_intent(intent_id, intent_name, intent_action, intent_desc, training_phrases, parent, customer_id, product_id, agent_id, fulfillments, intent_responses, intent_ids_to_delete)
                         print(response)
                         training_phrases.clear()
                         existing_intent = False
-                    training_phrases.append(row['Training Phrases'])
-                    if row['ID'] is None or row['ID']=='':
+                    training_phrases.append(row[TRAINING_PHRASES])
+                    if row[COLUMN_ID] is None or row[COLUMN_ID]=='':
                         intent_id = ""
                     else:
-                        intent_id = intent_ids[row['ID']]
-                    intent_name, intent_desc, intent_action, fulfillments = row['Name'], row['Description'], row['Action'], row['Response']
+                        intent_id = intent_ids[row[COLUMN_ID]]
+                    intent_name, intent_desc, intent_action, fulfillments = row[COLUMN_NAME], row[COLUMN_DESCRIPTION], row[COLUMN_ACTION], row[COLUMN_RESPONSE]
             response = upsert_intent(intent_id, intent_name, intent_action, intent_desc, training_phrases, parent, customer_id, product_id, agent_id, fulfillments, intent_responses, intent_ids_to_delete)
             print(response)
             training_phrases.clear()
 
-            #Updating the default start flow with all the intent routes
-            intent_ids = get_actual_intent_ids(customer_id, product_id)
-            flow_path = f'{parent}/flows/{DEFAULT_FLOW_ID}'
-            flow_request = dialogflowcx_v3.GetFlowRequest(name=flow_path)
-            flow = flows_client.get_flow(flow_request)
-            update_flow(flow, intent_responses, intent_ids_to_delete)
+        #Updating the default start flow with all the intent routes
+        intent_ids = get_actual_intent_ids(customer_id, product_id)
+        flow_path = f'{parent}/flows/{DEFAULT_FLOW_ID}'
+        flow_request = dialogflowcx_v3.GetFlowRequest(name=flow_path)
+        flow = flows_client.get_flow(flow_request)
+        update_flow(flow, intent_responses, intent_ids_to_delete)
 
-            #Deleting intents marked for deletion
-            for intent in intent_ids_to_delete:
-                delete_intent(intent)
+        #Deleting intents marked for deletion
+        for intent in intent_ids_to_delete:
+            delete_intent(intent)
 
     except FileNotFoundError:
         traceback.print_exc()
@@ -387,7 +418,7 @@ def download_to_csv(customer_id, product_id):
     try:
         response = get_intents(customer_id, product_id)
         intents = response.json['intents']
-        header = ['ID', 'Name', 'Description', 'Training Phrases', 'Response', 'Action']
+        header = [COLUMN_ID, COLUMN_NAME, COLUMN_DESCRIPTION, TRAINING_PHRASES, COLUMN_RESPONSE, COLUMN_ACTION]
 
         name = get_name_for_id(customer_id, product_id)
         intent_path = f'/tmp/{name}-Intents.csv'
@@ -397,9 +428,9 @@ def download_to_csv(customer_id, product_id):
             writer.writerow(header)
             data = []
             for intent in intents:
-                phrases = intent['training_phrases']
+                phrases = intent[INTENT_TRAINING_PHRASES]
                 phrase = phrases[0]["parts"][0]["text"]
-                data = [intent['maskedIntentId'], intent['display_name'], intent['description'], phrase, intent['fulfillments'], ""]
+                data = [intent[MASKED_INTENT_IDS], intent[INTENT_DISPLAY_NAME], intent[COLUMN_DESCRIPTION], phrase, intent[INTENT_FULFILLMENTS], ""]
                 writer.writerow(data)
                 if len(phrases) > 1:
                     for phrase in phrases[1:]:
