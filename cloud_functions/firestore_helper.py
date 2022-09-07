@@ -4,7 +4,7 @@ Fire store handler
 import os
 from firebase_admin import firestore
 
-db = firestore.Client(os.getenv("PROJECT_ID", "retail-btl-dev"))
+db = firestore.Client(os.getenv("PROJECT_ID", "retail-btl-uat"))
 
 TABLE_PRODUCT = "Product"
 TABLE_TRAINING_DATA = "Training_Data"

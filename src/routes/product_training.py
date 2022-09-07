@@ -106,7 +106,7 @@ def generate_csv_using_images_path(product_id, training_paths):
         print("CSV Generated and uploaded")
         gcs_uri = "gs://" + customer_bucket_name + "/" + csv_file_path
         vps.import_product_sets(
-            project_id=os.getenv("PROJECT_ID", "retail-btl-dev"),
+            project_id=os.getenv(constant.PROJECT_ID, constant.DEFAULT_PROJECT_NAME),
             location="us-west1",
             gcs_uri=gcs_uri,
         )

@@ -5,7 +5,7 @@ import os
 from firebase_admin import firestore
 from src.helpers import constant
 
-db = firestore.Client(os.getenv(constant.PROJECT_ID, "retail-btl-dev"))
+db = firestore.Client(os.getenv(constant.PROJECT_ID, constant.DEFAULT_PROJECT_NAME))
 
 TABLE_CUSTOMER = "Customer"
 TABLE_PRODUCT = "Product"

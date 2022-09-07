@@ -1,6 +1,7 @@
 """
 Intent API service
 """
+import os
 import csv
 import traceback
 from datetime import datetime
@@ -11,8 +12,10 @@ from google.protobuf.field_mask_pb2 import FieldMask
 import firebase_admin
 from firebase_admin import firestore
 import gcsfs
+from src.helpers import constant
 
-PROJECT_ID = "retail-btl-dev"
+
+PROJECT_ID = os.getenv(constant.PROJECT_ID, constant.DEFAULT_PROJECT_NAME)
 LOCATION_ID = "global"
 DEFAULT_FLOW_ID = "00000000-0000-0000-0000-000000000000"
 DEFAULT_INTENT_ID = "00000000-0000-0000"
@@ -423,6 +426,7 @@ def download_to_csv(customer_id, product_id):
         name = get_name_for_id(customer_id, product_id)
         intent_path = f'/tmp/{name}-Intents.csv'
 
+        print("Intent path is: ", intent_path)
         with open(intent_path, 'w',  encoding='UTF8') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(header)
@@ -437,7 +441,7 @@ def download_to_csv(customer_id, product_id):
                         phrase_text = phrase["parts"][0]["text"]
                         data = ["", "", "", phrase_text, "", ""]
                         writer.writerow(data)
-
+        print("File {} is written!", intent_path)
         return send_file(intent_path)
     except Exception:
         traceback.print_exc()

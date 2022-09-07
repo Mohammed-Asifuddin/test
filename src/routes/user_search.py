@@ -16,34 +16,38 @@ def search_product():
     """
     image_data = request.get_json()["imageFile"]
     active_customer = get_active_customer_info()
-    product_categories = get_customer_product_categories(
-        active_customer[constant.CUSTOMER_ID]
-    )
-    product_categories = [*set(product_categories)]
-    project_id = os.getenv("PROJECT_ID", "retail-btl-dev")
-    location = "us-west1"
-    response = vps.get_similar_products_file(
-        project_id=project_id,
-        location=location,
-        product_set_id=active_customer[constant.BUCKET_NAME],
-        product_categories=product_categories,
-        image_uri=image_data,
-    )
-    if hasattr(response, 'error'):
-        resp = jsonify({constant.MESSAGE: response.error.message})
-        resp.status_code = 400
+    if active_customer:
+        product_categories = get_customer_product_categories(
+            active_customer[constant.CUSTOMER_ID]
+        )
+        product_categories = [*set(product_categories)]
+        project_id = os.getenv(constant.PROJECT_ID, constant.DEFAULT_PROJECT_NAME)
+        location = "us-west1"
+        response = vps.get_similar_products_file(
+            project_id=project_id,
+            location=location,
+            product_set_id=active_customer[constant.BUCKET_NAME],
+            product_categories=product_categories,
+            image_uri=image_data,
+        )
+        if hasattr(response, 'error'):
+            resp = jsonify({constant.MESSAGE: response.error.message})
+            resp.status_code = 400
+            return resp
+        if  hasattr(response, 'score') and response.score >= 0.65:
+            product_id = response.product.product_labels[0].value
+            doc = fh.get_product_by_id(doc_id=product_id).to_dict()
+            doc[constant.PRODUCT_ID] = product_id
+            resp = jsonify(
+                {constant.MESSAGE: "Product identified.", constant.DATA: doc})
+            resp.status_code = 200
+        else:
+            resp = jsonify(
+                {constant.MESSAGE: "Product not found"})
+            resp.status_code = 400
         return resp
-    if  hasattr(response, 'score') and response.score >= 0.65:
-        product_id = response.product.product_labels[0].value
-        doc = fh.get_product_by_id(doc_id=product_id).to_dict()
-        doc[constant.PRODUCT_ID] = product_id
-        resp = jsonify(
-            {constant.MESSAGE: "Product identified.", constant.DATA: doc})
-        resp.status_code = 200
-    else:
-        resp = jsonify(
-            {constant.MESSAGE: "Product not found"})
-        resp.status_code = 400
+    resp = jsonify({constant.MESSAGE: "No Active Customer"})
+    resp.status_code = 400
     return resp
 
 

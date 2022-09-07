@@ -177,7 +177,7 @@ def create_customer():
         return customer_duplicate
     doc = fh.add_customer(customer_dict=customer_dict)
     customer_dict[constant.CUSTOMER_ID] = doc[-1].id
-    agent_response = df.create_agent(os.getenv("PROJECT_ID", "retail-btl-dev"), name)
+    agent_response = df.create_agent(os.getenv(constant.PROJECT_ID, constant.DEFAULT_PROJECT_NAME), name)
     agent_dict = {}
     agent_dict[constant.CUSTOMER_ID] = doc[-1].id
     agent_dict[constant.AGENT_ID] = (agent_response.name.split("/"))[-1]
