@@ -387,11 +387,13 @@ def download_to_csv(customer_id, product_id):
     try:
         response = get_intents(customer_id, product_id)
         intents = response.json['intents']
+        print("Got {} intents to download!", len(intents))
         header = ['ID', 'Name', 'Description', 'Training Phrases', 'Response', 'Action']
 
         name = get_name_for_id(customer_id, product_id)
         intent_path = f'/tmp/{name}-Intents.csv'
 
+        print("Intent path is: ", intent_path)
         with open(intent_path, 'w',  encoding='UTF8') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(header)
@@ -406,7 +408,7 @@ def download_to_csv(customer_id, product_id):
                         phrase_text = phrase["parts"][0]["text"]
                         data = ["", "", "", phrase_text, "", ""]
                         writer.writerow(data)
-
+        print("File {} is written!", intent_path)
         return send_file(intent_path)
     except Exception:
         traceback.print_exc()
