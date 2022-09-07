@@ -386,6 +386,7 @@ def get_customer_intents(customer_id):
 
 
 @app.route(ROUTE + "/<customer_id>/intent/download", methods=["GET"])
+@authorize()
 def download_customer_intents(customer_id):
     """
     Downloads a CSV file of customer intents

@@ -26,8 +26,7 @@ def authorize():
                 user = auth.verify_id_token(auth_token)
                 # print("User:")
                 # print(user)
-                uid = user['uid']
-                user_details = db.collection('Users').document(uid).get().to_dict()
+                user_details = db.collection('Users').where('email', '==', user['email']).where('is_active', '==', True).get()
                 if len(user_details) <= 0:
                     print("ERROR: could not find user")
                     abort(401)

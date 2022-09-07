@@ -250,6 +250,7 @@ def get_product_intents(product_id):
 
 
 @app.route(ROUTE + "/<product_id>/intent/download", methods=["GET"])
+@authorize()
 def download_product_intents(product_id):
     """
     Downloads a CSV file of product intents
