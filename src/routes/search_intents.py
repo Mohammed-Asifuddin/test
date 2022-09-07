@@ -21,7 +21,7 @@ def detect_intent():
     """
     Returns the fulfillment text corresponding the intent
     """
-    project_id = os.getenv(constant.PROJECT_ID, "retail-btl-uat")
+    project_id = os.getenv(constant.PROJECT_ID, constant.DEFAULT_PROJECT_NAME)
     location_id = "global"
 
     data = request.json

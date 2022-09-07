@@ -1,6 +1,9 @@
 """
 Application constants
 """
+from unittest.mock import DEFAULT
+
+
 LOGO_FILE_PATH = "logo_file_path"
 VIDEO_FILE_PATH = "video_file_path"
 INTENT_FILE_PATH = "intent_file_path"
@@ -61,3 +64,4 @@ IS_IMPORTED = "is_imported"
 CATEGORY_CODE = "category_code"
 IS_TRAINED = "is_trained"
 PROJECT_ID = "PROJECT_ID"
+DEFAULT_PROJECT_NAME = "DEFAULT"

@@ -1,6 +1,7 @@
 """
 Intent API service
 """
+import os
 import csv
 import traceback
 from datetime import datetime
@@ -11,8 +12,10 @@ from google.protobuf.field_mask_pb2 import FieldMask
 import firebase_admin
 from firebase_admin import firestore
 import gcsfs
+from src.helpers import constant
 
-PROJECT_ID = "retail-btl-uat"
+
+PROJECT_ID = os.getenv(constant.PROJECT_ID, constant.DEFAULT_PROJECT_NAME)
 LOCATION_ID = "global"
 DEFAULT_FLOW_ID = "00000000-0000-0000-0000-000000000000"
 DEFAULT_INTENT_ID = "00000000-0000-0000"

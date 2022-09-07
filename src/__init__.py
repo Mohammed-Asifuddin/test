@@ -5,10 +5,13 @@ import os
 from flask import Flask
 from flask_cors import CORS
 from flasgger import Swagger
+from dotenv import load_dotenv, find_dotenv
 from config import envConfig, gCloudConfig
 
 
 app = Flask(__name__)
+
+load_dotenv(find_dotenv('.env_uat'))
 
 # Swagger configurations
 swagger_config = {
