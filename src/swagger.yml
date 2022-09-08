@@ -840,6 +840,45 @@ paths:
             type: file
         "400":
           description: There was an error while downloading intents CSV!
+  /singed-url:
+    post:
+      tags:
+      - Signed URL
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Get Singed URL"
+          required: true
+          schema:
+            type: object
+            required:
+            - "customer_bucket_name"
+            - "blob_name"
+            properties:
+              customer_bucket_name:
+                type: string
+                format: string
+              blob_name:
+                type: string
+                format: string
+      responses:
+        "405":
+          description: "Invalid input"
+        "200":
+          description: "Invalid input"
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                format: string
+              data:
+                type: string
+                format: string
 definitions:
   ApiResponse:
       type: "object"
@@ -882,3 +921,4 @@ definitions:
         type: "string"
       fulfillments:
         type: "string"
+  
