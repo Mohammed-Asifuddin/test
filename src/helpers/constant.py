@@ -65,3 +65,4 @@ CATEGORY_CODE = "category_code"
 IS_TRAINED = "is_trained"
 PROJECT_ID = "PROJECT_ID"
 DEFAULT_PROJECT_NAME = "DEFAULT"
+BLOB_NAME = 'blob_name'
