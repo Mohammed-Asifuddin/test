@@ -164,7 +164,6 @@ def update_product():
 
 
 @app.route(ROUTE, methods=["GET"])
-@cross_origin()
 @authorize()
 def get_all_products():
     """
@@ -181,7 +180,6 @@ def get_all_products():
 
 
 @app.route(ROUTE + "/<product_id>", methods=["DELETE"])
-@cross_origin()
 @authorize()
 def delete_product(product_id):
     """
@@ -209,7 +207,6 @@ def delete_product(product_id):
 
 
 @app.route(ROUTE + "/categories", methods=["GET"])
-@cross_origin()
 @authorize()
 def get_all_products_categories():
     """
@@ -226,7 +223,6 @@ def get_all_products_categories():
 
 
 @app.route(ROUTE + "/<product_id>/intent", methods=["POST"])
-@cross_origin()
 def manage_product_intents(product_id):
     """
     Add/Update/Delete product intents
@@ -236,7 +232,6 @@ def manage_product_intents(product_id):
 
 
 @app.route(ROUTE + "/<product_id>/intent", methods=["GET"])
-@cross_origin()
 @authorize()
 def get_product_intents(product_id):
     """
@@ -246,7 +241,6 @@ def get_product_intents(product_id):
 
 
 @app.route(ROUTE + "/<product_id>/intent/download", methods=["GET"])
-@cross_origin()
 @authorize()
 def download_product_intents(product_id):
     """

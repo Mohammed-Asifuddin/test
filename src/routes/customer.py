@@ -257,7 +257,6 @@ def update_customer():
 
 
 @app.route(ROUTE, methods=["GET"])
-@cross_origin()
 @authorize()
 def get_all_customer():
     """
@@ -274,7 +273,6 @@ def get_all_customer():
 
 
 @app.route(ROUTE + "/active", methods=["GET"])
-@cross_origin()
 def get_active_customer():
     """
     Get active customers data
@@ -302,7 +300,6 @@ def get_active_customer():
 
 
 @app.route(ROUTE + "/<customer_id>", methods=["DELETE"])
-@cross_origin()
 @authorize()
 def delete_customer(customer_id):
     """
@@ -319,7 +316,6 @@ def delete_customer(customer_id):
 
 
 @app.route(ROUTE + "/status", methods=["PUT"])
-@cross_origin()
 @authorize()
 def update_customer_status():
     """
@@ -363,7 +359,6 @@ def update_customer_status():
 
 
 @app.route(ROUTE + "/<customer_id>/intent", methods=["POST"])
-@cross_origin()
 def manage_customer_intents(customer_id):
     """
     Add/Update/Delete customer intents
@@ -373,7 +368,6 @@ def manage_customer_intents(customer_id):
 
 
 @app.route(ROUTE + "/<customer_id>/intent", methods=["GET"])
-@cross_origin()
 @authorize()
 def get_customer_intents(customer_id):
     """
@@ -383,7 +377,6 @@ def get_customer_intents(customer_id):
 
 
 @app.route(ROUTE + "/<customer_id>/intent/download", methods=["GET"])
-@cross_origin()
 @authorize()
 def download_customer_intents(customer_id):
     """
