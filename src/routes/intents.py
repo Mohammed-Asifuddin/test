@@ -13,7 +13,8 @@ import firebase_admin
 from firebase_admin import firestore
 import gcsfs
 from src.helpers import constant
-
+from src.helpers.gCloud import firestore_helper as fh
+from src.helpers.gCloud import dialogflow as df
 
 PROJECT_ID = os.getenv(constant.PROJECT_ID, constant.DEFAULT_PROJECT_NAME)
 
@@ -267,6 +268,15 @@ def get_intents(customer_id, product_id):
         for route in flow.transition_routes:
             if constant.DEFAULT_INTENT_ID not in route.intent:
                 fullfillments[route.intent] = route.trigger_fulfillment.messages[0].text.text[0]
+
+        if product_id!="":
+            product_name = fh.get_product_by_id(product_id)['name']
+            pages = df.get_all_pages(flow_path)
+            for page in pages:
+                if page.display_name!=product_name:
+                    continue
+                for route in page.transition_routes:
+                    fullfillments[route.intent] = route.trigger_fulfillment.messages[0].text.text[0]
 
         intent_ids = get_masked_intent_ids(customer_id, product_id)
         resp_intents = get_intents_data(intents, intent_ids, fullfillments)
