@@ -205,3 +205,13 @@ def get_agent_id_by_customer_id(customer_id):
         if doc.id:
             return doc.to_dict()[constant.AGENT_ID]
     return ""
+
+def get_anchor_product_page(customer_id):
+    """
+    Returns the respective product anchor page ID stored in FS for the customer/agent
+    """
+    if customer_id != "":
+        doc = db.collection(TABLE_CUSTOMER).document(customer_id).get()
+        if doc.id:
+            return doc.to_dict()[constant.ANCHOR_PRODUCT_PAGE]
+    return ""

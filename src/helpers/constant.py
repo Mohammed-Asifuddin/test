@@ -88,4 +88,10 @@ INTENT_TRAINING_PHRASES = "training_phrases"
 INTENT_FULFILLMENTS = "fulfillments"
 INTENT_COLLECTION_NAME_FIELD = "name"
 STRING_INTENT_PATH = "intents/"
+PRODUCT_NAME = "ProductName"
+DEFAULT_PRODUCT_PAGE_NAME = "GetProductName"
+DEFAULT_PRODUCT_PAGE_FULFILLMENT = "Please enter product name"
+ENTITY_TYPE = "projects/-/locations/-/agents/-/entityTypes/sys.any"
+ANCHOR_PRODUCT_PAGE = "anchor_product_page_id"
+
 BLOB_NAME = 'blob_name'
