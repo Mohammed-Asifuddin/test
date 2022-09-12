@@ -221,7 +221,7 @@ def get_product_page_id(product_id):
     Returns the respective product DF page ID stored in FS for the product
     """
     if product_id != "":
-        doc = db.collection(TABLE_CUSTOMER).document(product_id).get()
+        doc = db.collection(TABLE_PRODUCT).document(product_id).get()
         if doc.id:
             return doc.to_dict()[constant.PRODUCT_PAGE_ID]
     return ""

@@ -270,7 +270,8 @@ def get_intents(customer_id, product_id):
                 fullfillments[route.intent] = route.trigger_fulfillment.messages[0].text.text[0]
 
         if product_id!="":
-            product_name = fh.get_product_by_id(product_id)['name']
+            product = fh.get_product_by_id(product_id)
+            product_name = product.to_dict()[constant.NAME]
             pages = df.get_all_pages(flow_path)
             for page in pages:
                 if page.display_name!=product_name:
