@@ -27,15 +27,15 @@ def create_agent(project_id, display_name):
     response = agents_client.create_agent(request={"agent": agent, "parent": parent})
     return response
 
-def get_all_pages(flow_path):
+def get_product_page(page_name):
     """
-    Gets all pages for the agent
+    Gets the page for the provided page name
     """
-    request = ListPagesRequest(
-        parent=flow_path,
-    )
     page_client = PagesClient()
-    return page_client.list_pages(request=request)
+    request = GetPageRequest(
+        name=page_name,
+    )
+    return page_client.get_page(request=request)
 
 def add_route_for_product_name_page(agent_id, anchor_product_page_id, new_product_page):
     """
@@ -45,10 +45,7 @@ def add_route_for_product_name_page(agent_id, anchor_product_page_id, new_produc
 
     project_id = os.getenv(constant.PROJECT_ID, constant.DEFAULT_PROJECT_NAME)
     page_name = f'projects/{project_id}/locations/{constant.LOCATION_ID}/agents/{agent_id}/flows/{constant.DEFAULT_FLOW_ID}/pages/{anchor_product_page_id}'
-    request = GetPageRequest(
-        name=page_name,
-    )
-    page = pages_client.get_page(request=request)
+    page = get_product_page(page_name)
 
     condition = f'$session.params.{constant.PRODUCT_NAME}="{new_product_page.display_name}"'
     new_route = TransitionRoute(condition=condition, target_page=new_product_page.name)

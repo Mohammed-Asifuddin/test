@@ -261,23 +261,23 @@ def get_intents(customer_id, product_id):
             resp.status_code = 400
             return resp
 
-        flow_path = f'{parent}/flows/{constant.DEFAULT_FLOW_ID}'
-        flow_request = dialogflowcx_v3.GetFlowRequest(name=flow_path)
-        flow = flows_client.get_flow(flow_request)
         fullfillments = {}
-        for route in flow.transition_routes:
-            if constant.DEFAULT_INTENT_ID not in route.intent:
-                fullfillments[route.intent] = route.trigger_fulfillment.messages[0].text.text[0]
+
+        if customer_id!="":
+            flow_path = f'{parent}/flows/{constant.DEFAULT_FLOW_ID}'
+            flow_request = dialogflowcx_v3.GetFlowRequest(name=flow_path)
+            flow = flows_client.get_flow(flow_request)
+            for route in flow.transition_routes:
+                if constant.DEFAULT_INTENT_ID not in route.intent:
+                    fullfillments[route.intent] = route.trigger_fulfillment.messages[0].text.text[0]
 
         if product_id!="":
             product = fh.get_product_by_id(product_id)
-            product_name = product.to_dict()[constant.NAME]
-            pages = df.get_all_pages(flow_path)
-            for page in pages:
-                if page.display_name!=product_name:
-                    continue
-                for route in page.transition_routes:
-                    fullfillments[route.intent] = route.trigger_fulfillment.messages[0].text.text[0]
+            product_page_id = product.to_dict()[constant.PRODUCT_PAGE_ID]
+            page_name = f'{parent}/flows/{constant.DEFAULT_FLOW_ID}/pages/{product_page_id}'
+            page = df.get_product_page(page_name)
+            for route in page.transition_routes:
+                fullfillments[route.intent] = route.trigger_fulfillment.messages[0].text.text[0]
 
         intent_ids = get_masked_intent_ids(customer_id, product_id)
         resp_intents = get_intents_data(intents, intent_ids, fullfillments)
