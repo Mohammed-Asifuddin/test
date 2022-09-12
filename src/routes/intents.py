@@ -175,14 +175,14 @@ def upsert_intent(intent_id, intent_name, intent_action, intent_desc, training_p
     resp = ""
     if intent_action=="":
         return f'Skipping intent with {len(intent.training_phrases)} phrases.'
-    elif intent_action==constant.CREATE:
+    elif intent_action.lower()==constant.CREATE:
         print(f'Creating {intent.display_name} with {len(intent.training_phrases)} phrases.')
         resp = create_intent(intent, parent, customer_id, product_id, agent_id)
-    elif intent_action==constant.UPDATE:
+    elif intent_action.lower()==constant.UPDATE:
         intent.name = f'{parent}/intents/{intent_id}'
         print(f'Updating {intent.display_name} with {len(intent.training_phrases)} phrases.')
         resp = update_intent(intent)
-    elif intent_action==constant.DELETE:
+    elif intent_action.lower()==constant.DELETE:
         intent.name = f'{parent}/intents/{intent_id}'
         intent_ids_to_delete.append(intent.name)
         return f'Deleting {intent.display_name} with {len(intent.training_phrases)} phrases.'

@@ -44,12 +44,4 @@ def import_product_sets(project_id, location, gcs_uri):
     )
     print(response)
     print("Processing operation name: {}".format(response.operation.name))
-    result = response.result()
     print("Processing done.")
-    for i, status in enumerate(result.statuses):
-        print("Status of processing line {} of the csv: {}".format(i, status))
-        if status.code == 0:
-            reference_image = result.reference_images[i]
-            print(reference_image)
-        else:
-            print("Status code not OK: {}".format(status.message))
