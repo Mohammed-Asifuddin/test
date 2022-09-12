@@ -13,6 +13,7 @@ from src.routes import customer, intents
 from src.helpers import constant
 from src.helpers.gCloud import pubsub_helper as psh
 from src.helpers.gCloud import storage_handler as sh
+from src.helpers.gCloud import dialogflow as df
 from src.security.authorize import authorize
 
 ROUTE = "/product"
@@ -76,6 +77,17 @@ def add_product():
                     product_bucket_name=product_bucket_name,
                     intent_file_path=intent_file_path,
                 )
+
+            #Create New Page for the product
+            agent_id = fsh.get_agent_id_by_customer_id(customer_id)
+            new_product_page = df.create_product_page(agent_id, product_name)
+            product_dict[constant.PRODUCT_PAGE_ID] = new_product_page.name.split("/")[-1]
+
+            #Link product page to Default/anchor product page
+            anchor_product_page_id = fsh.get_anchor_product_page(customer_id)
+            resp = df.add_route_for_product_name_page(agent_id, anchor_product_page_id, new_product_page)
+            print(resp)
+
             new_doc = fsh.add_product(product_dict=product_dict)
             product_dict[constant.PRODUCT_ID] = new_doc[-1].id
             manage_product_intents(product_dict[constant.PRODUCT_ID])
