@@ -37,5 +37,6 @@ from src.routes import (
     product,
     product_training,
     search_intents,
-    Signed_URL
+    Signed_URL,
+    search_similar_intents
 )
