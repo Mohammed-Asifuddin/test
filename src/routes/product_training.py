@@ -113,11 +113,17 @@ def generate_csv_using_images_path(product_id, training_paths):
         print('Updating is_imported and is_trained status')
         for training_path_dict in training_paths:
             td_id = training_path_dict["TD_ID"]
-            training_path_dict[constant.IS_IMPORTED] = True
-            training_path_dict[constant.IS_TRAINED] = True
-            training_path_dict.pop("TD_ID")
-            fsh.update_training_data_by_id(doc_id=td_id, doc_dict=training_path_dict)
-        update_training_status(product_id=product_id)
+            if not training_path_dict[constant.IS_IMPORTED]:
+                training_path_dict[constant.IS_IMPORTED] = True
+                training_path_dict.pop("TD_ID")
+                fsh.update_training_data_by_id(doc_id=td_id, doc_dict=training_path_dict)
+                print('Product imported to vision product search')
+            else:
+                training_path_dict[constant.IS_TRAINED] = True
+                training_path_dict.pop("TD_ID")
+                fsh.update_training_data_by_id(doc_id=td_id, doc_dict=training_path_dict)
+                update_training_status(product_id=product_id)
+                print('Product Trained')
 
 def update_training_status(product_id):
     """
