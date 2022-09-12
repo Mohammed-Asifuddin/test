@@ -370,12 +370,16 @@ def add_update_delete_intents(customer_id, product_id):
             print(response)
             training_phrases.clear()
 
-        #Updating the default start flow with all the intent routes
-        intent_ids = get_actual_intent_ids(customer_id, product_id)
-        flow_path = f'{parent}/flows/{constant.DEFAULT_FLOW_ID}'
-        flow_request = dialogflowcx_v3.GetFlowRequest(name=flow_path)
-        flow = flows_client.get_flow(flow_request)
-        update_flow(flow, intent_responses, intent_ids_to_delete)
+        if customer_id != "":
+            #Updating the default start flow with all the intent routes
+            intent_ids = get_actual_intent_ids(customer_id, product_id)
+            flow_path = f'{parent}/flows/{constant.DEFAULT_FLOW_ID}'
+            flow_request = dialogflowcx_v3.GetFlowRequest(name=flow_path)
+            flow = flows_client.get_flow(flow_request)
+            update_flow(flow, intent_responses, intent_ids_to_delete)
+        if product_id != "":
+            product_page_id = fh.get_product_page_id(product_id)
+            df.update_product_page(agent_id, product_page_id, intent_responses, intent_ids_to_delete)
 
         #Deleting intents marked for deletion
         for intent in intent_ids_to_delete:

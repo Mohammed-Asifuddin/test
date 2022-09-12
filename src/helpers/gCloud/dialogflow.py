@@ -120,3 +120,34 @@ def update_default_flow(project_id, agent_id, new_page):
     flow_request = UpdateFlowRequest(flow=flow, update_mask=update_mask)
     resp = flows_client.update_flow(request=flow_request)
     return resp
+
+def update_product_page(agent_id, product_page_id, intents, intent_ids_to_delete):
+    """
+    Updates the product page with all the intent routes
+    """
+    pages_client = PagesClient()
+
+    project_id = os.getenv(constant.PROJECT_ID, constant.DEFAULT_PROJECT_NAME)
+    page_name = f'projects/{project_id}/locations/{constant.LOCATION_ID}/agents/{agent_id}/flows/{constant.DEFAULT_FLOW_ID}/pages/{product_page_id}'
+    request = GetPageRequest(
+        name=page_name,
+    )
+    page = pages_client.get_page(request=request)
+
+    routes = [route for route in page.transition_routes if route.intent not in intent_ids_to_delete and route.intent not in intents.keys()]
+    for intent in intents:
+        res_text = ResponseMessage.Text(text=[intents[intent]])
+        resp_message = ResponseMessage(text=res_text)
+        fulfillment = Fulfillment(messages=[resp_message])
+        route = TransitionRoute(intent=intent, trigger_fulfillment=fulfillment)
+        routes.append(route)
+    page.transition_routes = routes
+
+    mask = FieldMask()
+    mask.FromJsonString("transitionRoutes")
+    request = UpdatePageRequest(
+        page=page,
+        update_mask=mask,
+    )
+    response = pages_client.update_page(request=request)
+    return response
