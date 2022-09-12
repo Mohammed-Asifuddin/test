@@ -5,7 +5,8 @@ import os
 from firebase_admin import firestore
 from src.helpers import constant
 
-db = firestore.Client(os.getenv(constant.PROJECT_ID, constant.DEFAULT_PROJECT_NAME))
+db = firestore.Client(os.getenv(constant.PROJECT_ID,
+                      constant.DEFAULT_PROJECT_NAME))
 
 TABLE_CUSTOMER = "Customer"
 TABLE_PRODUCT = "Product"
@@ -142,6 +143,7 @@ def get_all_product_categories():
     """
     return db.collection(TABLE_PRODUCT_CATEGORY).stream()
 
+
 def get_configuration():
     """
     Fetch configuration data
@@ -160,6 +162,17 @@ def get_non_imported_products():
     )
 
 
+def get_non_trained_products():
+    """
+    Get all untrained products
+    """
+    return (
+        db.collection(TABLE_TRAINING_DATA)
+        .where(constant.IS_TRAINED, EQUAL_OPERATOR, False)
+        .stream()
+    )
+
+
 def get_non_imported_products_by_id(product_id):
     """
     Get all untrained products
@@ -167,6 +180,18 @@ def get_non_imported_products_by_id(product_id):
     return (
         db.collection(TABLE_TRAINING_DATA)
         .where(constant.IS_IMPORTED, EQUAL_OPERATOR, False)
+        .where(constant.PRODUCT_ID, EQUAL_OPERATOR, product_id)
+        .stream()
+    )
+
+
+def get_non_trained_products_by_id(product_id):
+    """
+    Get all untrained products
+    """
+    return (
+        db.collection(TABLE_TRAINING_DATA)
+        .where(constant.IS_TRAINED, EQUAL_OPERATOR, False)
         .where(constant.PRODUCT_ID, EQUAL_OPERATOR, product_id)
         .stream()
     )
