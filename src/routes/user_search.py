@@ -7,6 +7,7 @@ from src import app
 from src.helpers.gCloud import vision_product_search as vps
 from src.helpers.gCloud import firestore_helper as fh
 from src.helpers import constant
+from src.helpers.gCloud import secret_manager_helper as smh
 
 
 @app.route("/api/user/search", methods=["POST"])
@@ -21,7 +22,8 @@ def search_product():
             active_customer[constant.CUSTOMER_ID]
         )
         product_categories = [*set(product_categories)]
-        project_id = os.getenv(constant.PROJECT_ID, constant.DEFAULT_PROJECT_NAME)
+        project_id = os.getenv(constant.PROJECT_ID,
+                               constant.DEFAULT_PROJECT_NAME)
         location = "us-west1"
         response = vps.get_similar_products_file(
             project_id=project_id,
@@ -34,7 +36,7 @@ def search_product():
             resp = jsonify({constant.MESSAGE: response.error.message})
             resp.status_code = 400
             return resp
-        if  hasattr(response, 'score') and response.score >= 0.65:
+        if hasattr(response, 'score') and response.score >= 0.65:
             product_id = response.product.product_labels[0].value
             doc = fh.get_product_by_id(doc_id=product_id).to_dict()
             doc[constant.PRODUCT_ID] = product_id
@@ -77,3 +79,13 @@ def get_customer_product_categories(customer_id):
         data = doc.to_dict()
         list_data.append(data[constant.CATEGORY_CODE])
     return list_data
+
+
+@app.route("/api/token", methods=["GET"])
+def get_user_details():
+    """
+    Provides username and password details
+    """
+    resp = jsonify({constant.MESSAGE: "Success",
+                   constant.TOKEN: smh.get_user_flow_token()})
+    return resp
