@@ -322,6 +322,11 @@ def delete_customer(customer_id):
         return doc
     doc["is_deleted"] = True
     fh.update_customer_by_id(doc_id=customer_id, doc_dict=doc)
+    docs = fh.get_all_products_by_customer_id(customer_id=customer_id)
+    for doc in docs:
+        data = doc.to_dict()
+        data[constant.IS_DELETED] = True
+        fh.update_product_by_id(doc_id=doc.id, doc_dict= data)
     resp = jsonify({constant.MESSAGE: constant.CUSTOMER_DELETED_MESSAGE_SUCCESS})
     resp.status_code = 200
     return resp
