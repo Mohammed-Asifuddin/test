@@ -9,7 +9,6 @@ from flask import jsonify, send_file
 from google.cloud import dialogflowcx_v3
 from google.cloud.dialogflowcx_v3.types.intent import Intent, ListIntentsRequest
 from google.protobuf.field_mask_pb2 import FieldMask
-import firebase_admin
 from firebase_admin import firestore
 import gcsfs
 from src.helpers import constant
@@ -17,7 +16,6 @@ from src.helpers import constant
 
 PROJECT_ID = os.getenv(constant.PROJECT_ID, constant.DEFAULT_PROJECT_NAME)
 
-firebase_admin.initialize_app()
 db = firestore.client()
 client = dialogflowcx_v3.IntentsClient()
 flows_client = dialogflowcx_v3.FlowsClient()

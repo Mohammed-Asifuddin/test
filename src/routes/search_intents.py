@@ -2,15 +2,17 @@
 Search Intent API
 """
 
-import os, time, uuid, sys
+import os
+import uuid
+import sys
 from google.cloud import dialogflowcx_v3 as df
 from flask_cors import cross_origin
 from flask import request
+from flask_api import status
 from src import app
 from src.helpers import constant
 from src.helpers.gCloud import firestore_helper as fsh
-from flask_cors import cross_origin
-from flask_api import status
+from src.security.authorize import authorize
 
 ROUTE = "/detectIntent"
 
