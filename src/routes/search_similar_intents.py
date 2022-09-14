@@ -11,6 +11,7 @@ from src.helpers import constant
 from src.helpers.gCloud import firestore_helper as fsh
 from flask_cors import cross_origin
 from flask_api import status
+from src.security.authorize import authorize
 
 ROUTE = "/detectIntentNew"
 
@@ -50,6 +51,7 @@ def detect_intent(agent, session_id, text_input):
 
 @app.route(ROUTE, methods=["POST"])
 @cross_origin()
+@authorize()
 def prepare_detect_intent():
     """
     Returns the fulfillment text corresponding the intent

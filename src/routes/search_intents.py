@@ -17,6 +17,7 @@ ROUTE = "/detectIntent"
 
 @app.route(ROUTE, methods=["POST"])
 @cross_origin()
+@authorize()
 def detect_intent():
     """
     Returns the fulfillment text corresponding the intent

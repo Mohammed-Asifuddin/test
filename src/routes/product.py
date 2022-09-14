@@ -223,6 +223,7 @@ def get_all_products_categories():
 
 
 @app.route(ROUTE + "/<product_id>/intent", methods=["POST"])
+@authorize()
 def manage_product_intents(product_id):
     """
     Add/Update/Delete product intents

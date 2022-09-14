@@ -8,9 +8,10 @@ from src.helpers.gCloud import vision_product_search as vps
 from src.helpers.gCloud import firestore_helper as fh
 from src.helpers import constant
 from src.helpers.gCloud import secret_manager_helper as smh
-
+from src.security.authorize import authorize
 
 @app.route("/api/user/search", methods=["POST"])
+@authorize()
 def search_product():
     """
     User product search Post Method

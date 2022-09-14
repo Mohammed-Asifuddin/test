@@ -273,6 +273,7 @@ def get_all_customer():
 
 
 @app.route(ROUTE + "/active", methods=["GET"])
+@authorize()
 def get_active_customer():
     """
     Get active customers data
@@ -359,6 +360,7 @@ def update_customer_status():
 
 
 @app.route(ROUTE + "/<customer_id>/intent", methods=["POST"])
+@authorize()
 def manage_customer_intents(customer_id):
     """
     Add/Update/Delete customer intents
