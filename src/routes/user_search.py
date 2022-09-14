@@ -17,6 +17,8 @@ def search_product():
     User product search Post Method
     """
     image_data = request.get_json()["imageFile"]
+    print('Image:')
+    print(image_data)
     active_customer = get_active_customer_info()
     if active_customer:
         product_categories = get_customer_product_categories(
