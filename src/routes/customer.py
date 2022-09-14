@@ -177,12 +177,24 @@ def create_customer():
         return customer_duplicate
     doc = fh.add_customer(customer_dict=customer_dict)
     customer_dict[constant.CUSTOMER_ID] = doc[-1].id
-    agent_response = df.create_agent(os.getenv(constant.PROJECT_ID, constant.DEFAULT_PROJECT_NAME), name)
+    project_id = os.getenv(constant.PROJECT_ID, constant.DEFAULT_PROJECT_NAME)
+    agent_response = df.create_agent(project_id, name)
     agent_dict = {}
     agent_dict[constant.CUSTOMER_ID] = doc[-1].id
     agent_dict[constant.AGENT_ID] = (agent_response.name.split("/"))[-1]
     agent_dict[constant.DISPLAY_NAME] = name
     fh.add_agent(agent_dict=agent_dict)
+
+    #Adding DF changes for initializing new Agent
+    anchor_product_page_resp = df.create_default_product_page(project_id, agent_dict[constant.AGENT_ID])
+    #Add product_page_resp.name to the customer collection
+    customer_dict[constant.ANCHOR_PRODUCT_PAGE] = anchor_product_page_resp.name.split("/")[-1]
+    fh.update_customer_by_id(customer_dict[constant.CUSTOMER_ID], customer_dict)
+
+    #Links Start Page to anchor product page
+    linked_product_page_resp = df.update_default_flow(project_id, agent_dict[constant.AGENT_ID], customer_dict[constant.ANCHOR_PRODUCT_PAGE])
+    print(linked_product_page_resp)
+
     manage_customer_intents(customer_dict[constant.CUSTOMER_ID])
     resp = jsonify(
         {
@@ -311,6 +323,11 @@ def delete_customer(customer_id):
         return doc
     doc["is_deleted"] = True
     fh.update_customer_by_id(doc_id=customer_id, doc_dict=doc)
+    docs = fh.get_all_products_by_customer_id(customer_id=customer_id)
+    for doc in docs:
+        data = doc.to_dict()
+        data[constant.IS_DELETED] = True
+        fh.update_product_by_id(doc_id=doc.id, doc_dict= data)
     resp = jsonify({constant.MESSAGE: constant.CUSTOMER_DELETED_MESSAGE_SUCCESS})
     resp.status_code = 200
     return resp

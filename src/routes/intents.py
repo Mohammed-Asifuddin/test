@@ -12,7 +12,8 @@ from google.protobuf.field_mask_pb2 import FieldMask
 from firebase_admin import firestore
 import gcsfs
 from src.helpers import constant
-
+from src.helpers.gCloud import firestore_helper as fh
+from src.helpers.gCloud import dialogflow as df
 
 PROJECT_ID = os.getenv(constant.PROJECT_ID, constant.DEFAULT_PROJECT_NAME)
 
@@ -258,12 +259,22 @@ def get_intents(customer_id, product_id):
             resp.status_code = 400
             return resp
 
-        flow_path = f'{parent}/flows/{constant.DEFAULT_FLOW_ID}'
-        flow_request = dialogflowcx_v3.GetFlowRequest(name=flow_path)
-        flow = flows_client.get_flow(flow_request)
         fullfillments = {}
-        for route in flow.transition_routes:
-            if constant.DEFAULT_INTENT_ID not in route.intent:
+
+        if customer_id!="":
+            flow_path = f'{parent}/flows/{constant.DEFAULT_FLOW_ID}'
+            flow_request = dialogflowcx_v3.GetFlowRequest(name=flow_path)
+            flow = flows_client.get_flow(flow_request)
+            for route in flow.transition_routes:
+                if constant.DEFAULT_INTENT_ID not in route.intent:
+                    fullfillments[route.intent] = route.trigger_fulfillment.messages[0].text.text[0]
+
+        if product_id!="":
+            product = fh.get_product_by_id(product_id)
+            product_page_id = product.to_dict()[constant.PRODUCT_PAGE_ID]
+            page_name = f'{parent}/flows/{constant.DEFAULT_FLOW_ID}/pages/{product_page_id}'
+            page = df.get_product_page(page_name)
+            for route in page.transition_routes:
                 fullfillments[route.intent] = route.trigger_fulfillment.messages[0].text.text[0]
 
         intent_ids = get_masked_intent_ids(customer_id, product_id)
@@ -358,12 +369,16 @@ def add_update_delete_intents(customer_id, product_id):
             print(response)
             training_phrases.clear()
 
-        #Updating the default start flow with all the intent routes
-        intent_ids = get_actual_intent_ids(customer_id, product_id)
-        flow_path = f'{parent}/flows/{constant.DEFAULT_FLOW_ID}'
-        flow_request = dialogflowcx_v3.GetFlowRequest(name=flow_path)
-        flow = flows_client.get_flow(flow_request)
-        update_flow(flow, intent_responses, intent_ids_to_delete)
+        if customer_id != "":
+            #Updating the default start flow with all the intent routes
+            intent_ids = get_actual_intent_ids(customer_id, product_id)
+            flow_path = f'{parent}/flows/{constant.DEFAULT_FLOW_ID}'
+            flow_request = dialogflowcx_v3.GetFlowRequest(name=flow_path)
+            flow = flows_client.get_flow(flow_request)
+            update_flow(flow, intent_responses, intent_ids_to_delete)
+        if product_id != "":
+            product_page_id = fh.get_product_page_id(product_id)
+            df.update_product_page(agent_id, product_page_id, intent_responses, intent_ids_to_delete)
 
         #Deleting intents marked for deletion
         for intent in intent_ids_to_delete:
