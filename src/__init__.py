@@ -2,6 +2,7 @@
 All Routes
 """
 import os
+import firebase_admin
 from flask import Flask
 from flask_cors import CORS
 from flasgger import Swagger
@@ -13,6 +14,7 @@ app = Flask(__name__)
 
 load_dotenv(find_dotenv('.env_uat'))
 
+firebase_admin.initialize_app()
 # Swagger configurations
 swagger_config = {
     "headers": [],
