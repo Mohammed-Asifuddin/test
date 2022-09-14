@@ -64,9 +64,8 @@ def prepare_detect_intent():
     text_input = data["text_input"]
     session_id = data["session_id"]
     product_name = data["product_name"]
-    
-    # agent_id = fsh.get_agent_id_by_customer_id(customer_id)
-    agent_id = "bb57d233-259b-4cfa-83ae-89db8dc688ee"
+
+    agent_id = fsh.get_agent_id_by_customer_id(customer_id)
     agent = f"projects/{project_id}/locations/{location_id}/agents/{agent_id}"
 
     if session_id != "":
