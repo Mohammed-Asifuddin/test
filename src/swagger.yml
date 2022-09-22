@@ -840,6 +840,64 @@ paths:
             type: file
         "400":
           description: There was an error while downloading intents CSV!
+  /detectIntentNew:
+    post:
+      summary: Calls DialogFlow to detect an intent and receive responses
+      description: This will be used every time the user asks a question on their mobile devices. This will fetch an appropriate response from DialogFlow.
+      tags:
+      - DialogFlow
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Detect intent request"
+        required: true
+        schema:
+          type: object
+          required:
+          - "customer_id"
+          - "text_input"
+          properties:
+            customer_id:
+              type: string
+              format: string
+            text_input:
+              type: string
+              format: string
+            session_id:
+              type: string
+              format: string
+            product_name:
+              type: string
+              format: string
+      responses:
+        "200":
+          description: "Returns an object with an appropriate fulfillment."
+          schema:
+            type: object
+            properties:
+              uuid:
+                type: string
+                format: uuid
+              success:
+                type: boolean
+                format: boolean
+              fulfillments:
+                type: string
+        "400":
+          description: "Returns an error object"
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                format: boolean
+              message:
+                type: string
+                format: string
   /singed-url:
     post:
       tags:
