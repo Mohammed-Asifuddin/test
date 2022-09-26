@@ -190,6 +190,9 @@ resource "google_cloud_scheduler_job" "btl_job" {
     uri         = var.scheduler_url
     body        = base64encode("{}")
   }
+   depends_on = [
+    google_project_service.service
+  ]
 }
 
 
