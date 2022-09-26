@@ -30,7 +30,7 @@ def get_intent_path(customer_id, product_id):
     elif product_id != "":
         doc = db.collection(constant.PRODUCT_COLLECTION).document(product_id).get()
     if doc.id:
-        return doc.to_dict()['intent_file_path']
+        return doc.to_dict()[constant.INTENT_FILE_PATH]
     return ""
 
 def get_agent_id(customer_id, product_id):
@@ -59,7 +59,7 @@ def get_name_for_id(customer_id, product_id):
     elif product_id != "":
         doc = db.collection(constant.PRODUCT_COLLECTION).document(product_id).get()
     if doc.id:
-        return doc.to_dict()['name']
+        return doc.to_dict()[constant.NAME]
     return ""
 
 def get_masked_intent_ids(customer_id, product_id):
@@ -101,7 +101,7 @@ def create_intent(intent, parent, customer_id, product_id, agent_id):
         )
         response = client.create_intent(request=request)
     except Exception:
-        resp = jsonify({"message": "Intent creation failed!", "error": traceback.format_exc()})
+        resp = jsonify({constant.MESSAGE: "Intent creation failed!", "error": traceback.format_exc()})
         resp.status_code = 400
         return resp
 
@@ -114,7 +114,7 @@ def create_intent(intent, parent, customer_id, product_id, agent_id):
         constant.MASKED_INTENT_IDS: datetime.now().strftime('%Y%m-%d%H-%M%S-') + intent_id[-4:]
     }, merge=True)
     print(intent_ref)
-    resp = jsonify({"message": "Intent creation successful!"})
+    resp = jsonify({constant.MESSAGE: "Intent creation successful!"})
     resp.name = response.name
     resp.status_code = 200
     return resp
@@ -129,7 +129,7 @@ def update_intent(intent):
     try:
         response = client.update_intent(request=request)
     except Exception:
-        resp = jsonify({"message": "Intent updation failed!", "error": traceback.format_exc()})
+        resp = jsonify({constant.MESSAGE: "Intent updation failed!", "error": traceback.format_exc()})
         resp.status_code = 400
         return resp
     intent_name = response.display_name
@@ -138,7 +138,7 @@ def update_intent(intent):
         constant.INTENT_COLLECTION_NAME_FIELD : intent_name,
     })
     print(intent_ref)
-    resp = jsonify({"message": "Intent updation successful!"})
+    resp = jsonify({constant.MESSAGE: "Intent updation successful!"})
     resp.name = response.name
     resp.status_code = 200
     return resp
@@ -156,7 +156,7 @@ def delete_intent(intent):
         db.collection(constant.INTENT_COLLECTION).document(intent_id).delete()
     except Exception:
         traceback.print_exc()
-        resp = jsonify({"message": "Intent deletion failed!"})
+        resp = jsonify({constant.MESSAGE: "Intent deletion failed!"})
         resp.status_code = 400
         return resp
     return f'Intent {intent_id} deleted!'
@@ -214,7 +214,7 @@ def get_intents_data(intents, intent_ids, fullfillments):
         except Exception:
             print("There was an error while fetching an intent from DialogFlow!")
             traceback.print_exc()
-            resp = jsonify({"message": "There was an error while fetching an intent from DialogFlow!"})
+            resp = jsonify({constant.MESSAGE: "There was an error while fetching an intent from DialogFlow!"})
             resp.status_code = 400
             return resp
 
@@ -247,7 +247,7 @@ def get_intents(customer_id, product_id):
     parent = f'projects/{PROJECT_ID}/locations/{constant.LOCATION_ID}/agents/{agent_id}'
 
     if (agent_id is None or agent_id == ''):
-        resp = jsonify({"message": "No Agent found for this customer/product."})
+        resp = jsonify({constant.MESSAGE: "No Agent found for this customer/product."})
         resp.status_code = 400
         return resp
 
@@ -259,7 +259,7 @@ def get_intents(customer_id, product_id):
         except Exception:
             traceback.print_exc()
             print("No intents associated with this Agent ID!")
-            resp = jsonify({"message": "No intents associated with this Agent ID!"})
+            resp = jsonify({constant.MESSAGE: "No intents associated with this Agent ID!"})
             resp.status_code = 400
             return resp
 
@@ -287,7 +287,7 @@ def get_intents(customer_id, product_id):
     except Exception:
         traceback.print_exc()
         print("There was an error while building intents response!")
-        resp = jsonify({"message": "There was an error while building intents response!"})
+        resp = jsonify({constant.MESSAGE: "There was an error while building intents response!"})
         resp.status_code = 400
         return resp
 
@@ -318,7 +318,7 @@ def update_flow(flow, intents, intent_ids_to_delete):
     except Exception:
         traceback.print_exc()
         print("There was an error while updating the flow!")
-        resp = jsonify({"message": "There was an error while updating the flow!"})
+        resp = jsonify({constant.MESSAGE: "There was an error while updating the flow!"})
         resp.status_code = 400
         return resp
 
@@ -331,7 +331,7 @@ def add_update_delete_intents(customer_id, product_id):
 
     if (agent_id is None or agent_id == ''):
         traceback.format_exc()
-        resp = jsonify({"message": "No Agent found for this customer/product."})
+        resp = jsonify({constant.MESSAGE: "No Agent found for this customer/product."})
         resp.status_code = 400
         return resp
 
@@ -393,18 +393,18 @@ def add_update_delete_intents(customer_id, product_id):
     except FileNotFoundError:
         traceback.print_exc()
         print("No Intents file found at the path.")
-        resp = jsonify({"message": "No Intents file found at the path."})
+        resp = jsonify({constant.MESSAGE: "No Intents file found at the path."})
         resp.status_code = 400
         return resp
     except Exception:
         traceback.print_exc()
         print("Customer/Product intents update failed!")
-        resp = jsonify({"message": "Customer/Product intents update failed."})
+        resp = jsonify({constant.MESSAGE: "Customer/Product intents update failed."})
         resp.status_code = 400
         return resp
 
     print("Customer/Product intents updated successfully.")
-    resp = jsonify({"message": "Customer/Product intents updated successfully."})
+    resp = jsonify({constant.MESSAGE: "Customer/Product intents updated successfully."})
     resp.status_code = 200
     return resp
 
@@ -440,6 +440,6 @@ def download_to_csv(customer_id, product_id):
     except Exception:
         traceback.print_exc()
         print("There was an error while downloading intents CSV!")
-        resp = jsonify({"message": "There was an error while downloading intents CSV!"})
+        resp = jsonify({constant.MESSAGE: "There was an error while downloading intents CSV!"})
         resp.status_code = 400
         return resp

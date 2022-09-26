@@ -90,9 +90,10 @@ def add_product():
 
             new_doc = fsh.add_product(product_dict=product_dict)
             product_dict[constant.PRODUCT_ID] = new_doc[-1].id
-            intent_response = manage_product_intents(product_dict[constant.PRODUCT_ID])
-            if intent_response.status_code==400:
-                return intent_response
+            if constant.INTENT_FILE_PATH in product_dict:
+                intent_response = manage_product_intents(product_dict[constant.PRODUCT_ID])
+                if intent_response.status_code==400:
+                    return intent_response
         else:
             return product_duplicate
     else:
@@ -170,9 +171,10 @@ def update_product():
         )
         doc[constant.INTENT_FILE_PATH] = intent_file_public_url
     fsh.update_product_by_id(doc_id=product_id, doc_dict=doc)
-    intent_response = manage_product_intents(product_id)
-    if intent_response.status_code==400:
-        return intent_response
+    if constant.INTENT_FILE_PATH in doc:
+        intent_response = manage_product_intents(product_id)
+        if intent_response.status_code==400:
+            return intent_response
     resp = jsonify(
         {constant.MESSAGE: constant.PRODUCT_UPDATE_MESSAGE, constant.DATA: doc}
     )
