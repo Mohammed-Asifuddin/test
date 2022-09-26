@@ -131,3 +131,10 @@ dmypy.json
 
 services/ivr-service/endpoints/backups/
 services/ivr-service/utils/backups/
+
+#Terraform ignore
+**/.terraform
+**/.terraform.lock.hcl
+/.vscode
+**/terraform.tfstate
+**/terraform.tfstate.backup
