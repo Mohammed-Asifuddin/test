@@ -101,8 +101,7 @@ def create_intent(intent, parent, customer_id, product_id, agent_id):
         )
         response = client.create_intent(request=request)
     except Exception:
-        traceback.print_exc()
-        resp = jsonify({"message": "Intent creation failed!"})
+        resp = jsonify({"message": "Intent creation failed!", "error": traceback.format_exc()})
         resp.status_code = 400
         return resp
 
@@ -115,7 +114,10 @@ def create_intent(intent, parent, customer_id, product_id, agent_id):
         constant.MASKED_INTENT_IDS: datetime.now().strftime('%Y%m-%d%H-%M%S-') + intent_id[-4:]
     }, merge=True)
     print(intent_ref)
-    return response
+    resp = jsonify({"message": "Intent creation successful!"})
+    resp.name = response.name
+    resp.status_code = 200
+    return resp
 
 def update_intent(intent):
     """
@@ -127,8 +129,7 @@ def update_intent(intent):
     try:
         response = client.update_intent(request=request)
     except Exception:
-        traceback.print_exc()
-        resp = jsonify({"message": "Intent updation failed!"})
+        resp = jsonify({"message": "Intent updation failed!", "error": traceback.format_exc()})
         resp.status_code = 400
         return resp
     intent_name = response.display_name
@@ -137,7 +138,10 @@ def update_intent(intent):
         constant.INTENT_COLLECTION_NAME_FIELD : intent_name,
     })
     print(intent_ref)
-    return response
+    resp = jsonify({"message": "Intent updation successful!"})
+    resp.name = response.name
+    resp.status_code = 200
+    return resp
 
 def delete_intent(intent):
     """
@@ -186,7 +190,7 @@ def upsert_intent(intent_id, intent_name, intent_action, intent_desc, training_p
         return f'Deleting {intent.display_name} with {len(intent.training_phrases)} phrases.'
     else:
         return f'Invalid Action {intent_action} in CSV.'
-    if resp!="" and resp.name!="":
+    if resp!="" and resp.status_code==200 and resp.name!="":
         intent_responses[resp.name] = fulfillments
     return resp
 
@@ -356,7 +360,8 @@ def add_update_delete_intents(customer_id, product_id):
                 else:
                     if training_phrases:
                         response = upsert_intent(intent_id, intent_name, intent_action, intent_desc, training_phrases, parent, customer_id, product_id, agent_id, fulfillments, intent_responses, intent_ids_to_delete)
-                        print(response)
+                        if response.status_code==400:
+                            return response
                         training_phrases.clear()
                         existing_intent = False
                     training_phrases.append(row[constant.TRAINING_PHRASES])
@@ -366,7 +371,8 @@ def add_update_delete_intents(customer_id, product_id):
                         intent_id = intent_ids[row[constant.COLUMN_ID]]
                     intent_name, intent_desc, intent_action, fulfillments = row[constant.COLUMN_NAME], row[constant.COLUMN_DESCRIPTION], row[constant.COLUMN_ACTION], row[constant.COLUMN_RESPONSE]
             response = upsert_intent(intent_id, intent_name, intent_action, intent_desc, training_phrases, parent, customer_id, product_id, agent_id, fulfillments, intent_responses, intent_ids_to_delete)
-            print(response)
+            if response.status_code==400:
+                return response
             training_phrases.clear()
 
         if customer_id != "":

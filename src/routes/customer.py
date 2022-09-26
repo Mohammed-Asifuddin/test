@@ -195,7 +195,10 @@ def create_customer():
     linked_product_page_resp = df.update_default_flow(project_id, agent_dict[constant.AGENT_ID], customer_dict[constant.ANCHOR_PRODUCT_PAGE])
     print(linked_product_page_resp)
 
-    manage_customer_intents(customer_dict[constant.CUSTOMER_ID])
+    intent_response = manage_customer_intents(customer_dict[constant.CUSTOMER_ID])
+    if intent_response.status_code==400:
+        return intent_response
+
     resp = jsonify(
         {
             constant.MESSAGE: constant.CUSTOMER_SUCCESS_MESSAGE,
@@ -262,7 +265,10 @@ def update_customer():
                 bucket_name=doc[constant.BUCKET_NAME],
             )
     fh.update_customer_by_id(doc_id=customer_id, doc_dict=doc)
-    manage_customer_intents(customer_id)
+    intent_response = manage_customer_intents(customer_id)
+    if intent_response.status_code==400:
+        return intent_response
+
     resp = jsonify({constant.MESSAGE: constant.CUSTOMER_UPDATED, constant.DATA: doc})
     print("Customer Updated.")
     return resp, status.HTTP_200_OK
