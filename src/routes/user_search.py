@@ -2,13 +2,15 @@
 User product search API module
 """
 import os
-from flask import jsonify, request
+from flask import jsonify, request, Response
 from src import app
 from src.helpers.gCloud import vision_product_search as vps
 from src.helpers.gCloud import firestore_helper as fh
 from src.helpers import constant
 from src.helpers.gCloud import secret_manager_helper as smh
 from src.security.authorize import authorize
+from src.helpers.gCloud import text_to_speech_helper as ts
+
 
 @app.route("/api/user/search", methods=["POST"])
 @authorize()
@@ -92,3 +94,17 @@ def get_user_details():
     resp = jsonify({constant.MESSAGE: "Success",
                    constant.TOKEN: smh.get_user_flow_token()})
     return resp
+
+
+@app.route("/api/text-to-speech", methods=["POST"])
+def convert_text_to_speech():
+    """
+    Provides username and password details
+    """
+    text = request.get_json()["text"]
+    if text == "" and text.strip() != "":
+        resp = jsonify({constant.MESSAGE: "Text is mandatory"})
+        resp.status_code = 400
+        return resp
+    response = ts.convert_text_to_speech(text))
+    return Response(response,mimetype="audio/x-wav")
