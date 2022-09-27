@@ -93,7 +93,11 @@ def add_product():
             if constant.INTENT_FILE_PATH in product_dict:
                 intent_response = manage_product_intents(product_dict[constant.PRODUCT_ID])
                 if intent_response.status_code==400:
-                    return intent_response
+                    intent_response = intent_response.json
+                    intent_response.update({constant.DATA: product_dict})
+                    resp = jsonify(intent_response)
+                    resp.status_code = 400
+                    return resp
         else:
             return product_duplicate
     else:
@@ -174,7 +178,11 @@ def update_product():
     if constant.INTENT_FILE_PATH in doc:
         intent_response = manage_product_intents(product_id)
         if intent_response.status_code==400:
-            return intent_response
+            intent_response = intent_response.json
+            intent_response.update({constant.DATA: doc})
+            resp = jsonify(intent_response)
+            resp.status_code = 400
+            return resp
     resp = jsonify(
         {constant.MESSAGE: constant.PRODUCT_UPDATE_MESSAGE, constant.DATA: doc}
     )

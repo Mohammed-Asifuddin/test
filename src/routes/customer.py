@@ -198,7 +198,11 @@ def create_customer():
     if constant.INTENT_FILE_PATH in customer_dict:
         intent_response = manage_customer_intents(customer_dict[constant.CUSTOMER_ID])
         if intent_response.status_code==400:
-            return intent_response
+            intent_response = intent_response.json
+            intent_response.update({constant.DATA: customer_dict})
+            resp = jsonify(intent_response)
+            resp.status_code = 400
+            return resp
 
     resp = jsonify(
         {
@@ -269,7 +273,11 @@ def update_customer():
     if constant.INTENT_FILE_PATH in doc:
         intent_response = manage_customer_intents(customer_id)
         if intent_response.status_code==400:
-            return intent_response
+            intent_response = intent_response.json
+            intent_response.update({constant.DATA: doc})
+            resp = jsonify(intent_response)
+            resp.status_code = 400
+            return resp
 
     resp = jsonify({constant.MESSAGE: constant.CUSTOMER_UPDATED, constant.DATA: doc})
     print("Customer Updated.")
