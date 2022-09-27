@@ -106,5 +106,5 @@ def convert_text_to_speech():
         resp = jsonify({constant.MESSAGE: "Text is mandatory"})
         resp.status_code = 400
         return resp
-    response = ts.convert_text_to_speech(text))
+    response = ts.convert_text_to_speech(text)
     return Response(response,mimetype="audio/x-wav")
