@@ -10,6 +10,7 @@ from src.helpers import constant
 from src.helpers.gCloud import secret_manager_helper as smh
 from src.security.authorize import authorize
 from src.helpers.gCloud import text_to_speech_helper as ts
+from src.helpers.gCloud import storage_handler as sh
 
 
 @app.route("/api/user/search", methods=["POST"])
@@ -101,10 +102,18 @@ def convert_text_to_speech():
     """
     Provides username and password details
     """
+    session_id = request.headers.get('session_id')
+    if session_id == "" or session_id.strip() == "":
+        resp = jsonify({constant.MESSAGE: "Unidentified user."})
+        resp.status_code = 400
+        return resp
     text = request.get_json()["text"]
-    if text == "" and text.strip() != "":
+    if text == "" or text.strip() == "":
         resp = jsonify({constant.MESSAGE: "Text is mandatory"})
         resp.status_code = 400
         return resp
     response = ts.convert_text_to_speech(text)
-    return Response(response,mimetype="audio/x-wav")
+    url = sh.upload_audio_file(response=response,session_id=session_id)
+    #return Response(response,mimetype="audio/x-wav")
+    resp = jsonify({constant.MESSAGE: "Success","audio_file_url": url})
+    return resp
