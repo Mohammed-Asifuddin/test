@@ -1,9 +1,6 @@
 terraform {
   backend "gcs" {
-    #Enter Your Bucket Name> for storing state file
-
-    bucket = "<Enter Your Bucket Name>"
-
+    bucket = "<Enter Bucket Name>"
     prefix = "terraform-state"
   }
 }

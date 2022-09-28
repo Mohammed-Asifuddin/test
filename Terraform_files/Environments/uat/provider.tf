@@ -11,10 +11,6 @@ terraform {
     }
   }
 }
-# provider "google-beta" {
-#   project = var.project_id
-#   region  = var.region
-# }
 
 
 provider "google-beta" {
@@ -27,6 +23,7 @@ provider "google-beta" {
 provider "google" {
   project = var.project_id
   region  = var.region
+  #credentials = file("C://Users/SpringML/Desktop/Projects/my-beta-key.json")
 }
 provider "random" {
 

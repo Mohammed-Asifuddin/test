@@ -39,6 +39,11 @@ variable "topic_name" {
   type        = string
   
 }
+variable "topic_name2" {
+  description = "Pubsub topic name for backup Function"
+  type        = string
+  
+}
 variable "time_zone" {
   description = "Timezone Name."
   type        = string
@@ -49,8 +54,16 @@ variable "scheduler_url" {
   type        = string
   
 }
+
+
+
 variable "scheduler_freq" {
   description = "Frequency for Scheduler."
+  type        = string
+  
+}
+variable "scheduler_freq2" {
+  description = "Frequency for Backup Scheduler ."
   type        = string
   
 }
@@ -94,5 +107,38 @@ variable "fields_x" {
          "stringValue" = "xyz"
       }
     }
+}
+variable security_rules{
+  description= "Rules Details"
+  default= <<EOF
+  service cloud.firestore {
+  match /databases/{database}/documents {
+    match /Configuration/{document=**} {
+      allow read : if request.auth != null;
+    }
+    match /Product_Category/{document=**} {
+      allow read : if request.auth != null;
+    }
+    match /Users/{document=**} {
+      allow read : if request.auth != null;
+    }
+    match /Agent/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    match /Customer/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    match /Intent/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    match /Product/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    match /Training_Data/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
+EOF
 }
 

@@ -39,6 +39,11 @@ variable "topic_name" {
   type        = string
   
 }
+variable "topic_name2" {
+  description = "Pubsub topic name for backup Function"
+  type        = string
+  
+}
 variable "time_zone" {
   description = "Timezone Name."
   type        = string
@@ -49,8 +54,20 @@ variable "scheduler_url" {
   type        = string
   
 }
+
+variable "scheduler_url2" {
+  description = "Url for Scheduler."
+  type        = string
+  
+}
+
 variable "scheduler_freq" {
   description = "Frequency for Scheduler."
+  type        = string
+  
+}
+variable "scheduler_freq2" {
+  description = "Frequency for Backup Scheduler ."
   type        = string
   
 }
@@ -128,3 +145,4 @@ variable security_rules{
 }
 EOF
 }
+

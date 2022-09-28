@@ -80,10 +80,10 @@ resource "google_firestore_document" "config_doc" {
 
 
 
-  depends_on = [
-    #google_firebase_project.btl_firebase,
-    google_app_engine_application.app
-  ]
+  # depends_on = [
+  #   #google_firebase_project.btl_firebase,
+  #   google_app_engine_application.app
+  # ]
 }
 
 resource "google_firestore_document" "product_doc" {
@@ -130,10 +130,10 @@ resource "google_firestore_document" "product_doc" {
         # }
 
 
-  depends_on = [
-    #google_firebase_project.btl_firebase,
-    google_app_engine_application.app
-  ]
+  # depends_on = [
+  #   #google_firebase_project.btl_firebase,
+  #   google_app_engine_application.app
+  # ]
 }
 
 
@@ -195,8 +195,38 @@ resource "google_cloud_scheduler_job" "btl_job" {
   ]
 }
 
+resource "google_cloud_scheduler_job" "btl_backup_job" {
+  name             = "scheduledDatastoreExport-${var.env}"
+  description      = "job for backup"
+  schedule         = var.scheduler_freq2
+  time_zone        = var.time_zone
+  attempt_deadline = "320s"
 
+  retry_config {
+    retry_count = 1
+  }
 
+   pubsub_target {
+    # topic.id is the topic's full resource name.
+    topic_name = google_pubsub_topic.btl-backup-topic.id
+    data       = base64encode("{\"bucket\":\"gs://${module.Backup_storage.name}\"}")
+  }
+   depends_on = [
+    google_project_service.service,
+    google_pubsub_topic.btl-backup-topic
+  ]
+}
+
+module "Backup_storage" {
+  source     = "../../modules/gcs"
+  project_id = var.project_id
+
+  name = "${var.project_id}_fire_store_backup"
+  #description="bucket to store static files"
+  location = "US"
+ 
+
+}
 
 # resource "google_firebaserules_ruleset" "firestore" {
   

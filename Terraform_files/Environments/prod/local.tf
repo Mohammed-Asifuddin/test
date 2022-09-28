@@ -1,9 +1,8 @@
 locals {
-  function_folder = "../../../cloud_functions/"
-  function_name   = "btl-cloud-func"
+  
   uniq_doc=["prod1","prod2","prod3","prod4","prod5"]
   index=["0","1","2","3","4"]
-  bucket_name = "${var.project_id}-btl"
+  
   #prod_fields=[field1,field2,field3,field4,field5]
   #Firestore Fields For Configuration Collection
   conf_field      = jsonencode(
