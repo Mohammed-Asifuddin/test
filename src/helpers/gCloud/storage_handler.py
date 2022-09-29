@@ -93,7 +93,7 @@ def upload_audio_file(response,session_id):
     """
     storage_client = storage.Client()
     bucket = storage_client.bucket(audio_bucket_name)
-    file_name = session_id+".mp3"
+    file_name = str(session_id)+".mp3"
     intent_blob = bucket.blob(file_name)
     intent_blob.upload_from_string(response)
     blob_name = "gs://" + audio_bucket_name + "/" + file_name
