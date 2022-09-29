@@ -2,6 +2,7 @@
 Search Intent API
 """
 
+from cgitb import text
 import os, time, uuid, sys
 from google.cloud import dialogflowcx_v3 as df
 from flask_cors import cross_origin
@@ -12,6 +13,8 @@ from src.helpers.gCloud import firestore_helper as fsh
 from flask_cors import cross_origin
 from flask_api import status
 from src.security.authorize import authorize
+from src.helpers.gCloud import text_to_speech_helper as ts
+from src.helpers.gCloud import storage_handler as sh
 
 ROUTE = "/detectIntentNew"
 
@@ -38,7 +41,10 @@ def detect_intent(agent, session_id, text_input):
             " ".join(msg.text.text) for msg in response.query_result.response_messages
         ]
         print(f"Response text: {' '.join(response_messages)}\n")
-        return {"success": True, "fulfillments": response_messages, "uuid": session_id}, status.HTTP_200_OK
+        speech_text = response_messages[0]
+        audi_response = ts.convert_text_to_speech(speech_text)
+        url = sh.upload_audio_file(response=audi_response,session_id=session_id)
+        return {"success": True, "fulfillments": response_messages, "uuid": session_id, "url": url}, status.HTTP_200_OK
     except Exception:
         print("exception while input")
         print(text_input)
