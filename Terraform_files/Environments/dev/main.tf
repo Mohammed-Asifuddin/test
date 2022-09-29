@@ -247,3 +247,20 @@ module "Backup_storage" {
 #   ruleset_name = google_firebaserules_ruleset.firestore.id
   
 # }
+
+data "google_project" "project" {
+}
+
+resource "google_project_iam_binding" "project" {
+  project = var.project_id
+  for_each = toset(var.role1)
+  role    = each.key
+
+  members = [
+    "serviceAccount:${data.google_project.project.number}@cloudbuild.gserviceaccount.com",
+  ]
+
+    depends_on = [
+    google_project_service.service
+  ]
+}

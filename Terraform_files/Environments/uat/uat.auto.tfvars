@@ -20,6 +20,7 @@ api_enabled_project = [
   "firestore.googleapis.com",
   "firebase.googleapis.com"
 
+
 ]
 iam_permissions_sa_1 = [
   "roles/cloudfunctions.admin",

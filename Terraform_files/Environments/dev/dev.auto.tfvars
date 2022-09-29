@@ -1,4 +1,7 @@
 project_id = "centering-cable-362607"
+
+env        = "dev"
+
 region="us-west1"
 topic_name = "btl_video_to_image"
 topic_name2 = "startDatastoreExport"
@@ -40,13 +43,14 @@ iam_permissions_sa_1 = [
 
 
 
+
 # substitutions = {
 #   _REPO_PROJECT_NAME = "centering-cable-362607"
 #   _BRANCH_NAME       = "secret-manager-integration"
 
 # }
 
-env        = "dev"
+
 
 repo_links = ["https://github.com/springml-code/btlabel-backend", "https://github.com/springml-code/btlabel-ui", "https://github.com/springml-code/btlabel-admin-ui"]
 branchs    = ["secret-manager-integration", "btl-client", "admin-ui-base"]

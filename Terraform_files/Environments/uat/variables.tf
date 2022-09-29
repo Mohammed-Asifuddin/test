@@ -23,6 +23,14 @@ variable "iam_permissions_sa_1" {
   type        = list(string)
   description = "List of IAM Permissons"
 }
+variable "role1"{
+description = "List of permission for cloud build service Account"
+default = [
+  "roles/run.admin",
+  "roles/iam.serviceAccountUser"
+]
+}
+
 variable "user_flow_api_auth" {
   description = "secret value for userflow."
   type        = string
@@ -104,14 +112,7 @@ variable "substitutions" {
 }
 
 
-variable "fields_x" {
-    description = "field details"
-    default = {
-      "fields" = {
-         "stringValue" = "xyz"
-      }
-    }
-}
+
 variable security_rules{
   description= "Rules Details"
   default= <<EOF
