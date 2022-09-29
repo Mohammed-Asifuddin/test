@@ -43,7 +43,10 @@ def detect_intent(agent, session_id, text_input):
         print(f"Response text: {' '.join(response_messages)}\n")
         speech_text = response_messages[0]
         audi_response = ts.convert_text_to_speech(speech_text)
-        url = sh.upload_audio_file(response=audi_response,session_id=session_id)
+        if session_id == "" or session_id.strip() == "":
+            session_id_data = "59810560-3f14-11ed-b878-0242ac120002"
+        session_id_data = session_id
+        url = sh.upload_audio_file(response=audi_response,session_id=session_id_data)
         return {"success": True, "fulfillments": response_messages, "uuid": session_id, "url": url}, status.HTTP_200_OK
     except Exception:
         print("exception while input")
