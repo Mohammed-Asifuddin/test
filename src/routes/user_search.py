@@ -3,6 +3,7 @@ User product search API module
 """
 import os
 from flask import jsonify, request, Response
+from flask_cors import cross_origin
 from src import app
 from src.helpers.gCloud import vision_product_search as vps
 from src.helpers.gCloud import firestore_helper as fh
@@ -14,6 +15,7 @@ from src.helpers.gCloud import storage_handler as sh
 
 
 @app.route("/api/user/search", methods=["POST"])
+@cross_origin()
 @authorize()
 def search_product():
     """
@@ -98,6 +100,8 @@ def get_user_details():
 
 
 @app.route("/api/text-to-speech", methods=["POST"])
+@cross_origin()
+@authorize()
 def convert_text_to_speech():
     """
     Provides username and password details
