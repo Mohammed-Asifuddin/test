@@ -18,7 +18,8 @@ api_enabled_project = [
   "dialogflow.googleapis.com",
   "run.googleapis.com",
   "firestore.googleapis.com",
-  "firebase.googleapis.com"
+  "firebase.googleapis.com",
+  "compute.googleapis.com"
 
 
 ]
