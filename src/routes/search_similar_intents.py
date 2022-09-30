@@ -3,15 +3,17 @@ Search Intent API
 """
 
 from cgitb import text
-import os, time, uuid, sys
+import os
+import time
+import uuid
+import sys
 from google.cloud import dialogflowcx_v3 as df
 from flask_cors import cross_origin
 from flask import request
+from flask_api import status
 from src import app
 from src.helpers import constant
 from src.helpers.gCloud import firestore_helper as fsh
-from flask_cors import cross_origin
-from flask_api import status
 from src.security.authorize import authorize
 from src.helpers.gCloud import text_to_speech_helper as ts
 from src.helpers.gCloud import storage_handler as sh
@@ -20,11 +22,12 @@ ROUTE = "/detectIntentNew"
 
 session_client = df.SessionsClient()
 
+
 def detect_intent(agent, session_id, text_input):
     try:
         text_input = text_input[:255]  # dialog
         DIALOGFLOW_LANGUAGE_CODE = "en"
-        
+
         session_path = f"{agent}/sessions/{session_id}"
         print(session_path)
         text_input = df.TextInput(text=text_input)
@@ -43,8 +46,8 @@ def detect_intent(agent, session_id, text_input):
         print(f"Response text: {' '.join(response_messages)}\n")
         speech_text = response_messages[0]
         audi_response = ts.convert_text_to_speech(speech_text)
-        url = sh.upload_audio_file(response=audi_response,session_id=session_id)
-        return {"success": True, "fulfillments": response_messages, "uuid": session_id, "url": url}, status.HTTP_200_OK
+        sh.upload_audio_file(response=audi_response, session_id=session_id)
+        return {"success": True, "fulfillments": response_messages, "uuid": session_id}, status.HTTP_200_OK
     except Exception:
         print("exception while input")
         print(text_input)
@@ -78,7 +81,7 @@ def prepare_detect_intent():
         SESSION_ID = session_id
     else:
         SESSION_ID = uuid.uuid4()
-        #Initializing Dialogflow pages.
+        # Initializing Dialogflow pages.
         detect_intent(agent, SESSION_ID, "Hi")
         detect_intent(agent, SESSION_ID, product_name)
 

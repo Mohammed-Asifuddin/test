@@ -1,6 +1,7 @@
 """
 Google cloud storage file handler
 """
+from operator import contains
 import os
 import time
 from datetime import datetime, timezone, timedelta
@@ -65,14 +66,15 @@ def generate_download_signed_url_v4(bucket_name, blob_name):
     this if you are using Application Default Credentials from Google Compute
     Engine or from the Google Cloud SDK.
     """
-    blob_name = (blob_name.split(bucket_name)[-1])[1:]
+    blob_name = (blob_name.split(bucket_name)[-1])
+    if blob_name in "/":
+        blob_name = blob_name[1:]
     credentials, project_id = auth.default()
     token_refresh = requests.Request()
     credentials.refresh(token_refresh)
     storage_client = storage.Client()
     bucket = storage_client.get_bucket(bucket_name)
     blob = bucket.get_blob(blob_name)
-    # print(blob)
     if blob:
         now = datetime.now(timezone.utc)
         expiration = now + timedelta(minutes=90)
@@ -87,7 +89,7 @@ def generate_download_signed_url_v4(bucket_name, blob_name):
         url = None
     return url
 
-def upload_audio_file(response,session_id): 
+def upload_audio_file(response,session_id):
     """
     Upload the audio file
     """
@@ -96,6 +98,3 @@ def upload_audio_file(response,session_id):
     file_name = str(session_id)+".mp3"
     intent_blob = bucket.blob(file_name)
     intent_blob.upload_from_string(response)
-    blob_name = "gs://" + audio_bucket_name + "/" + file_name
-    url = generate_download_signed_url_v4(bucket_name=audio_bucket_name, blob_name=blob_name)
-    return url

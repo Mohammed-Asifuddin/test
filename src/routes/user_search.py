@@ -2,7 +2,7 @@
 User product search API module
 """
 import os
-from flask import jsonify, request, Response
+from flask import jsonify, request
 from flask_cors import cross_origin
 from src import app
 from src.helpers.gCloud import vision_product_search as vps
