@@ -1,15 +1,14 @@
 """
 Google cloud storage file handler
 """
-from operator import contains
 import os
 import time
 from datetime import datetime, timezone, timedelta
-from urllib import response
 from google.cloud import storage
 from google import auth
 from google.auth.transport import requests
 from src.helpers import constant
+from src.helpers.gCloud import firestore_helper as fsh
 
 project_id = os.getenv(constant.PROJECT_ID,constant.DEFAULT_PROJECT_NAME)
 audio_bucket_name=project_id+"_userflow_audio_backups"
@@ -98,6 +97,17 @@ def upload_audio_file(response,session_id):
     bucket = storage_client.bucket(audio_bucket_name)
     file_name = str(session_id)+".mp3"
     intent_blob = bucket.blob(file_name)
-    metadata = { 'Cache-Control': 'public, max-age=0' }
+    metadata = { 'Cache-Control': get_cache_control_value() }
     intent_blob.metadata = metadata
     intent_blob.upload_from_string(response)
+
+def get_cache_control_value():
+    """
+    Video to image pubsub topic id
+    """
+    configuration = {}
+    docs = fsh.get_configuration()
+    for doc in docs:
+        data = doc.to_dict()
+        configuration = {**data, **configuration}
+    return configuration["Cache-Control"]
