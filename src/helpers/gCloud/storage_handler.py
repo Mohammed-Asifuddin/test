@@ -94,6 +94,7 @@ def upload_audio_file(response,session_id):
     """
     Upload the audio file
     """
+    print("Uploading audio Session Id : "+ session_id)
     storage_client = storage.Client()
     bucket = storage_client.bucket(audio_bucket_name)
     file_name = str(session_id)+".mp3"
@@ -101,6 +102,7 @@ def upload_audio_file(response,session_id):
     metadata = { 'Cache-Control': get_cache_control_value() }
     intent_blob.metadata = metadata
     intent_blob.upload_from_string(response)
+    print(intent_blob.public_url)
 
 def get_cache_control_value():
     """

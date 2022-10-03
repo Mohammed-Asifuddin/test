@@ -107,6 +107,7 @@ def convert_text_to_speech():
     Provides username and password details
     """
     session_id = request.headers.get('session_id')
+    print("session_id"+session_id)
     if session_id == "" or session_id.strip() == "":
         resp = jsonify({constant.MESSAGE: "Unidentified user."})
         resp.status_code = 400
@@ -117,7 +118,7 @@ def convert_text_to_speech():
         resp.status_code = 400
         return resp
     response = ts.convert_text_to_speech(text)
-    url = sh.upload_audio_file(response=response,session_id=session_id)
-    #return Response(response,mimetype="audio/x-wav")
-    resp = jsonify({constant.MESSAGE: "Success","audio_file_url": url})
+    print("Text to Speech Session Id : "+ session_id)
+    sh.upload_audio_file(response=response,session_id=session_id)
+    resp = jsonify({constant.MESSAGE: "Success"})
     return resp

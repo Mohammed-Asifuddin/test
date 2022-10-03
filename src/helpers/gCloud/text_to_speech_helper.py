@@ -8,6 +8,7 @@ def convert_text_to_speech(text):
     """
     Text to speech helper method
     """
+    print("Converting Text to Speech, input text : "+text)
     client = texttospeech.TextToSpeechClient()
     synthesis_input = texttospeech.SynthesisInput(text=text)
     voice = texttospeech.VoiceSelectionParams(
