@@ -122,7 +122,7 @@ def convert_text_to_speech():
     resp = jsonify({constant.MESSAGE: "Success"})
     return resp
 
-@app.route("/api/text-to-speech2", methods=["GET"])
+@app.route("/api/get-text-to-speech", methods=["GET"])
 @cross_origin()
 @authorize()
 def convert_text_to_speech2():
