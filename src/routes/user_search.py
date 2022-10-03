@@ -2,7 +2,7 @@
 User product search API module
 """
 import os
-from flask import jsonify, request
+from flask import Response, jsonify, request
 from flask_cors import cross_origin
 from src import app
 from src.helpers.gCloud import vision_product_search as vps
@@ -23,7 +23,6 @@ def search_product():
     """
     image_data = request.get_json()["imageFile"]
     print('Image:')
-    print(image_data)
     active_customer = get_active_customer_info()
     if active_customer:
         product_categories = get_customer_product_categories(
@@ -122,3 +121,29 @@ def convert_text_to_speech():
     sh.upload_audio_file(response=response,session_id=session_id)
     resp = jsonify({constant.MESSAGE: "Success"})
     return resp
+
+@app.route("/api/text-to-speech2", methods=["GET"])
+@cross_origin()
+@authorize()
+def convert_text_to_speech2():
+    """
+    Provides username and password details
+    """
+    """ session_id = request.headers.get('session_id')
+    print("session_id"+session_id)
+    if session_id == "" or session_id.strip() == "":
+        resp = jsonify({constant.MESSAGE: "Unidentified user."})
+        resp.status_code = 400
+        return resp """
+    text = request.args.get("text")
+    if text == "" or text.strip() == "":
+        resp = jsonify({constant.MESSAGE: "Text is mandatory"})
+        resp.status_code = 400
+        return resp
+    response = ts.convert_text_to_speech(text)
+    #url = sh.upload_audio_file(response=response,session_id=session_id)
+    #return Response(response,mimetype="audio/x-wav")
+    return Response(response,mimetype="audio/mpeg")
+    #resp = jsonify({constant.MESSAGE: "Success","audio_file_url": url})
+    #return resp
+    
