@@ -5,6 +5,7 @@ from operator import contains
 import os
 import time
 from datetime import datetime, timezone, timedelta
+from urllib import response
 from google.cloud import storage
 from google import auth
 from google.auth.transport import requests
@@ -70,8 +71,8 @@ def generate_download_signed_url_v4(bucket_name, blob_name):
     if blob_name in "/":
         blob_name = blob_name[1:]
     credentials, project_id = auth.default()
-    token_refresh = requests.Request()
-    credentials.refresh(token_refresh)
+    #token_refresh = requests.Request()
+    #credentials.refresh(token_refresh)
     storage_client = storage.Client()
     bucket = storage_client.get_bucket(bucket_name)
     blob = bucket.get_blob(blob_name)
@@ -97,4 +98,6 @@ def upload_audio_file(response,session_id):
     bucket = storage_client.bucket(audio_bucket_name)
     file_name = str(session_id)+".mp3"
     intent_blob = bucket.blob(file_name)
+    metadata = { 'Cache-Control': 'public, max-age=0' }
+    intent_blob.metadata = metadata
     intent_blob.upload_from_string(response)
