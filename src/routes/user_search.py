@@ -124,7 +124,7 @@ def convert_text_to_speech():
 
 @app.route("/api/get-text-to-speech", methods=["GET"])
 @cross_origin()
-@authorize()
+#@authorize()
 def convert_text_to_speech2():
     """
     Provides username and password details
