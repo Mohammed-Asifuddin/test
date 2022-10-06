@@ -33,6 +33,8 @@ def datastore_export(event, context):
         context (google.cloud.functions.Context): The Cloud Functions event
             metadata.
     """
+    print(
+        f"This cloud function was triggered by messageId {context.event_id} published at {context.timestamp}.")
     if "data" in event:
         # Triggered via Cloud Scheduler, decode the inner data field of the json payload.
         json_data = json.loads(base64.b64decode(event["data"]).decode("utf-8"))

@@ -16,7 +16,8 @@ def video_to_image(event, context):
          event (dict): Event payload.
          context (google.cloud.functions.Context): Metadata for the event.
     """
-    print("Pubsub message received and processing")
+    print(
+        f"This cloud function was triggered by messageId {context.event_id} published at {context.timestamp}.")
     pubsub_message = base64.b64decode(event["data"]).decode("utf-8")
     pubsub_message = json.loads(pubsub_message)
     video_name = (pubsub_message[constant.VIDEO_FILE_PATH].split("/"))[-1]
