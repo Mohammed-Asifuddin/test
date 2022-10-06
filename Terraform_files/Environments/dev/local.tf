@@ -1,9 +1,8 @@
 locals {
-  function_folder = "../../../cloud_functions/"
-  function_name   = "btl-cloud-func"
+  
   uniq_doc=["prod1","prod2","prod3","prod4","prod5"]
   index=["0","1","2","3","4"]
-  bucket_name = "${var.project_id}-btl"
+  
   #prod_fields=[field1,field2,field3,field4,field5]
   #Firestore Fields For Configuration Collection
   conf_field      = jsonencode(
@@ -41,33 +40,5 @@ locals {
       
 
 
-        # field1      = jsonencode(
-        #   {
-               
-        #   "prd-${random_string.random.id}" = {
-        #            mapValue = {
-        #                fields = {
-        #                 "category" = {
-        #                        stringValue = "Packaged goods"
-        #                     },
-
-        #                    "category_code" = {
-        #                        stringValue = "packagedgoods-v1"
-        #                     },
-
-        #                   "category_id" = {
-        #                        stringValue = "9yss1MQM6He4B9jegID2"
-        #                     },
-
-        #                   "description"= {
-        #                        stringValue = "Packaged goods are any products that are shown through a wrapper, container, box, etc."
-        #                     }
-                        
-                            
-        #                 }
-        #             }
-        #         }
-        #     }
-        # )
 
 }

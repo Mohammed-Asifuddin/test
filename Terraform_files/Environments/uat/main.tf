@@ -18,16 +18,7 @@ module "btl_service_account" {
     "${var.project_id}" = var.iam_permissions_sa_1
   }
 }
-# module "terraform_service_account" {
-#   source       = "../../modules/iam-service-account"
-#   project_id   = var.project_id
-#   name         = "btl-${var.env}"
-#   generate_key = false
 
-#   iam_project_roles = {
-#     "${var.project_id}" = var.iam_permissions_sa_1
-#   }
-# }
 
 module "secret-manager" {
   source     = "../../modules/secret-manager"
@@ -89,16 +80,17 @@ resource "google_firestore_document" "config_doc" {
 
 
 
-  depends_on = [
-    #google_firebase_project.btl_firebase,
-    google_app_engine_application.app
-  ]
+  # depends_on = [
+  #   #google_firebase_project.btl_firebase,
+  #   google_app_engine_application.app
+  # ]
 }
 
 resource "google_firestore_document" "product_doc" {
   project    = var.project_id
   collection = "Product_Category"
   for_each=toset(local.index)
+ 
   document_id = "prod_col-${each.value}"
   
   fields = jsonencode(
@@ -130,44 +122,7 @@ resource "google_firestore_document" "product_doc" {
             }
         )
   #fields      = "{\"some-doc\":{\"mapValue\":{\"fields\":{\"some_key\":{\"stringValue\":\"value\"},\"some_key2\":{\"stringValue\":\"value2\"}}}}}"
-  # fields      = jsonencode(
-  #         {
-  #              some-doc = {
-  #                  mapValue = {
-  #                      fields = {
-  #                       some_key = {
-  #                              stringValue = "value"
-  #                           },
 
-  #                          some_key2 = {
-  #                              stringValue = "value2"
-  #                           },
-  #                           some_key3 = {
-  #                              stringValue = "value3"
-  #                           }
-                            
-  #                       }
-  #                   }
-  #               },
-  #               some-doc-2 = {
-  #                  mapValue = {
-  #                      fields = {
-  #                       some_key = {
-  #                              stringValue = "value"
-  #                           },
-
-  #                          some_key2 = {
-  #                              stringValue = "value2"
-  #                           },
-  #                           some_key3 = {
-  #                              stringValue = "value3"
-  #                           }
-                            
-  #                       }
-  #                   }
-  #               }
-  #           }
-  #       )
         # for_each=local.prod_fields
         # document_id=each.key
         # dynamic fields = {
@@ -175,10 +130,10 @@ resource "google_firestore_document" "product_doc" {
         # }
 
 
-  depends_on = [
-    #google_firebase_project.btl_firebase,
-    google_app_engine_application.app
-  ]
+  # depends_on = [
+  #   #google_firebase_project.btl_firebase,
+  #   google_app_engine_application.app
+  # ]
 }
 
 
@@ -236,6 +191,76 @@ resource "google_cloud_scheduler_job" "btl_job" {
     body        = base64encode("{}")
   }
    depends_on = [
+    google_project_service.service
+  ]
+}
+
+resource "google_cloud_scheduler_job" "btl_backup_job" {
+  name             = "scheduledDatastoreExport-${var.env}"
+  description      = "job for backup"
+  schedule         = var.scheduler_freq2
+  time_zone        = var.time_zone
+  attempt_deadline = "320s"
+
+  retry_config {
+    retry_count = 1
+  }
+
+   pubsub_target {
+    # topic.id is the topic's full resource name.
+    topic_name = google_pubsub_topic.btl-backup-topic.id
+    data       = base64encode("{\"bucket\":\"gs://${module.Backup_storage.name}\"}")
+  }
+   depends_on = [
+    google_project_service.service,
+    google_pubsub_topic.btl-backup-topic
+  ]
+}
+
+module "Backup_storage" {
+  source     = "../../modules/gcs"
+  project_id = var.project_id
+
+  name = "${var.project_id}_fire_store_backup"
+  #description="bucket to store static files"
+  location = "US"
+ 
+
+}
+
+# resource "google_firebaserules_ruleset" "firestore" {
+  
+#   source {
+#     files {
+      
+#       content     = var.security_rules
+#       name        = "cloud.firestore"
+#       fingerprint = sha1(var.security_rules)
+#     }
+#   }
+# }
+
+# resource "google_firebaserules_release" "firestore" {
+  
+#   name         = "cloud.firestore"
+  
+#   ruleset_name = google_firebaserules_ruleset.firestore.id
+  
+# }
+
+data "google_project" "project" {
+}
+
+resource "google_project_iam_binding" "project" {
+  project = var.project_id
+  for_each = toset(var.role1)
+  role    = each.key
+
+  members = [
+    "serviceAccount:${data.google_project.project.number}@cloudbuild.gserviceaccount.com",
+  ]
+
+    depends_on = [
     google_project_service.service
   ]
 }
