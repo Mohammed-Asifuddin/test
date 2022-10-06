@@ -19,7 +19,8 @@ api_enabled_project = [
   "run.googleapis.com",
   "firestore.googleapis.com",
   "firebase.googleapis.com",
-  "compute.googleapis.com"
+  "compute.googleapis.com",
+  "texttospeech.googleapis.com"
 
 ]
 iam_permissions_sa_1 = [
@@ -38,7 +39,8 @@ iam_permissions_sa_1 = [
   "roles/logging.logWriter",
   "roles/iam.serviceAccountUser",
   "roles/aiplatform.admin",
-  "roles/datastore.importExportAdmin"
+  "roles/datastore.importExportAdmin",
+  "roles/speech.admin"
 ]
 
 

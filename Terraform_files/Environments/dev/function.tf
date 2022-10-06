@@ -1,16 +1,16 @@
 locals {
-function_folder1 = "../../../cloud_functions/video_to_image/"
-function_name1   = "btl-cloud-func"
-bucket_name = "func-${var.project_id}-btl"
-bucket_name2 = "func-backup-${var.project_id}-btl"
-function_folder2 = "../../../cloud_functions/firestore_backup/"
-function_name2   = "btl-backup-cloud-func"
-#bucket_name2 = "${var.project_id}-btl"
+  function_folder1 = "../../../cloud_functions/video_to_image/"
+  function_name1   = "btl-cloud-func"
+  bucket_name      = "func-${var.project_id}-btl"
+  bucket_name2     = "func-backup-${var.project_id}-btl"
+  function_folder2 = "../../../cloud_functions/firestore_backup/"
+  function_name2   = "btl-backup-cloud-func"
+  #bucket_name2 = "${var.project_id}-btl"
 
 }
 
 resource "google_pubsub_topic" "btl-topic" {
-  name    = "${var.topic_name}"
+  name    = var.topic_name
   project = var.project_id
 
 
@@ -45,14 +45,14 @@ module "cloud-func-btl" {
     resource = google_pubsub_topic.btl-topic.name
     retry    = true
   }
-   depends_on = [google_pubsub_topic.btl-topic,
-  google_project_service.service
-    
+  depends_on = [google_pubsub_topic.btl-topic,
+    google_project_service.service
+
   ]
 }
 
 resource "google_pubsub_topic" "btl-backup-topic" {
-  name    = "${var.topic_name2}"
+  name    = var.topic_name2
   project = var.project_id
 
 
@@ -88,7 +88,7 @@ module "cloud-func-backup-btl" {
     retry    = true
   }
   depends_on = [google_pubsub_topic.btl-backup-topic,
-  google_project_service.service
-    
+    google_project_service.service
+
   ]
 }
