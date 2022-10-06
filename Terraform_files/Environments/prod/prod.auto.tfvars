@@ -1,6 +1,9 @@
-project_id = "enter-project-id"
+project_id = "Enter Your Project Id"
+env        = "prod"
 region="us-west1"
+
 topic_name = "btl_video_to_image"
+topic_name2 = "startDatastoreExport"
 time_zone = "America/Los_Angeles"
 api_enabled_project = [
   "cloudfunctions.googleapis.com",
@@ -15,7 +18,8 @@ api_enabled_project = [
   "dialogflow.googleapis.com",
   "run.googleapis.com",
   "firestore.googleapis.com",
-  "firebase.googleapis.com"
+  "firebase.googleapis.com",
+  "compute.googleapis.com"
 
 ]
 iam_permissions_sa_1 = [
@@ -33,7 +37,8 @@ iam_permissions_sa_1 = [
   "roles/storage.admin",
   "roles/logging.logWriter",
   "roles/iam.serviceAccountUser",
-  "roles/aiplatform.admin"
+  "roles/aiplatform.admin",
+  "roles/datastore.importExportAdmin"
 ]
 
 
@@ -44,12 +49,16 @@ iam_permissions_sa_1 = [
 
 # }
 
-env        = "uat"
 
-repo_links = ["https://github.com/springml-code/btlabel-backend", "https://github.com/springml-code/btlabel-ui", "https://github.com/springml-code/btlabel-ui"]
-branchs    = ["secret-manager-integration", "btl-client", "varun-angular-updation"]
-file_paths = ["cloudbuild.yaml", "cloudbuild.yaml", "btl-adminscreen-ui/cloudbuild.yaml"]
+repo_links = ["https://github.com/springml-code/btlabel-backend", "https://github.com/springml-code/btlabel-ui", "https://github.com/springml-code/btlabel-admin-ui"]
+branchs    = ["secret-manager-integration", "btl-client", "admin-ui-base"]
+file_paths = ["cloudbuild.yaml", "cloudbuild.yaml", "cloudbuild.yaml"]
 repo_names = ["btl-backend-trigger", "btl-client-ui-trigger", "btl-admin-ui-trigger"]
 
 scheduler_url = "https://replacewithcloudrunurl/product-training"
+#scheduler_url2 = "https://replacewithcloudrunurl/backup"
 scheduler_freq = "0 */1 * * *"
+scheduler_freq2 = "0 0 * * SUN"
+
+
+#category_1=["Packaged goods","Toys","Home goods","Apparel","General"]
