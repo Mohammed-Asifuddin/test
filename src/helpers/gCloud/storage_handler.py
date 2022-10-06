@@ -8,7 +8,6 @@ from google.cloud import storage
 from google import auth
 from google.auth.transport import requests
 from src.helpers import constant
-from src.helpers.gCloud import firestore_helper as fsh
 
 project_id = os.getenv(constant.PROJECT_ID,constant.DEFAULT_PROJECT_NAME)
 audio_bucket_name=project_id+"_userflow_audio_backups"
@@ -89,28 +88,3 @@ def generate_download_signed_url_v4(bucket_name, blob_name):
     else:
         url = None
     return url
-
-def upload_audio_file(response,session_id):
-    """
-    Upload the audio file
-    """
-    print("Uploading audio Session Id : "+ session_id)
-    storage_client = storage.Client()
-    bucket = storage_client.bucket(audio_bucket_name)
-    file_name = str(session_id)+".mp3"
-    intent_blob = bucket.blob(file_name)
-    metadata = { 'Cache-Control': get_cache_control_value() }
-    intent_blob.metadata = metadata
-    intent_blob.upload_from_string(response)
-    print(intent_blob.public_url)
-
-def get_cache_control_value():
-    """
-    Video to image pubsub topic id
-    """
-    configuration = {}
-    docs = fsh.get_configuration()
-    for doc in docs:
-        data = doc.to_dict()
-        configuration = {**data, **configuration}
-    return configuration["Cache-Control"]
