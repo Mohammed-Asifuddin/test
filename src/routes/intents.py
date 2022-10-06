@@ -369,8 +369,6 @@ def read_intent_csv(intent_path, parent, customer_id, product_id, agent_id, inte
                 continue
             if training_phrases:
                 response = upsert_intent(intent_id, intent_name, intent_action, intent_desc, training_phrases, parent, customer_id, product_id, agent_id, fulfillments, intent_responses, intent_ids_to_delete)
-                if response!="" and response.status_code==400:
-                    return response
                 training_phrases.clear()
                 existing_intent = False
             training_phrases.append(row[constant.TRAINING_PHRASES])
@@ -378,6 +376,8 @@ def read_intent_csv(intent_path, parent, customer_id, product_id, agent_id, inte
                 intent_id = ""
             else:
                 intent_id = intent_ids[row[constant.COLUMN_ID]]
+            if response!="" and response.status_code==400:
+                return response, intent_responses, intent_ids_to_delete
             intent_name, intent_desc, intent_action, fulfillments = row[constant.COLUMN_NAME], row[constant.COLUMN_DESCRIPTION], row[constant.COLUMN_ACTION], row[constant.COLUMN_RESPONSE]
         response = upsert_intent(intent_id, intent_name, intent_action, intent_desc, training_phrases, parent, customer_id, product_id, agent_id, fulfillments, intent_responses, intent_ids_to_delete)
         training_phrases.clear()
