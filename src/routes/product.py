@@ -32,83 +32,81 @@ def add_product():
     """
     product_dict = {}
     validate_resp = pv.validate_create_request(create_request=request)
-    if validate_resp == "":
-        product_name = request.form[constant.NAME]
-        product_bucket_name = "".join(
-            char for char in product_name if char.isalnum()
-        ).lower()
-        product_duplicate = pv.is_duplicate_product(
-            product_bucket_name=product_bucket_name
-        )
-        if product_duplicate == 0:
-            customer_id = request.form[constant.CUSTOMER_ID]
-            product_dict[constant.CUSTOMER_ID] = customer_id
-            product_dict[constant.NAME] = request.form[constant.NAME]
-            product_dict[constant.LABEL] = request.form[constant.LABEL]
-            product_dict[constant.DESCRIPTION] = request.form[constant.DESCRIPTION]
-            product_dict[constant.CATEGORY_ID] = request.form[constant.CATEGORY_ID]
-            product_dict[constant.METADATA] = request.form[constant.METADATA]
-            product_dict[constant.IMAGE_STATUS] = 0
-            product_dict[constant.TRAINING_STATUS] = 0
-            product_dict[constant.IS_DELETED] = False
-            product_dict["product_display_id"] = str(int(time.time())).split(
-                ".", maxsplit=1
-            )[0]
-            product_dict[constant.PRODUCT_BUCKET_NAME] = product_bucket_name
-            doc = fsh.get_customer_by_id(customer_id).to_dict()
-            customer_bucket_name = doc[constant.BUCKET_NAME]
-            product_dict[constant.CUSTOMER_BUCKET_NAME] = customer_bucket_name
-            product_dict[constant.CUSTOMER_NAME] = doc[constant.NAME]
-            category_doc = fsh.get_product_category_by_id(
-                category_id=request.form[constant.CATEGORY_ID]
-            ).to_dict()
-            product_dict[constant.CATEGORY_NAME] = category_doc[constant.CATEGORY]
-            product_dict[constant.CATEGORY_CODE] = category_doc[constant.CATEGORY_CODE]
-            video_file_path = request.files[constant.VIDEO_FILE_PATH]
-            product_dict[constant.VIDEO_FILE_PATH] = fv.upload_video_file(
-                customer_bucket_name=customer_bucket_name,
-                product_bucket_name=product_bucket_name,
-                video_file_path=video_file_path,
-            )
-            if (
-                constant.INTENT_FILE_PATH in request.files
-                and request.files[constant.INTENT_FILE_PATH]
-                and request.files[constant.INTENT_FILE_PATH].filename != ""
-            ):
-                intent_file_path = request.files[constant.INTENT_FILE_PATH]
-                product_dict[constant.INTENT_FILE_PATH] = fv.upload_intent_file(
-                    customer_bucket_name=customer_bucket_name,
-                    product_bucket_name=product_bucket_name,
-                    intent_file_path=intent_file_path,
-                )
-
-            # Create New Page for the product
-            agent_id = fsh.get_agent_id_by_customer_id(customer_id)
-            new_product_page = df.create_product_page(agent_id, product_name)
-            product_dict[constant.PRODUCT_PAGE_ID] = new_product_page.name.split(
-                "/")[-1]
-
-            # Link product page to Default/anchor product page
-            anchor_product_page_id = fsh.get_anchor_product_page(customer_id)
-            resp = df.add_route_for_product_name_page(
-                agent_id, anchor_product_page_id, new_product_page)
-            print(resp)
-
-            new_doc = fsh.add_product(product_dict=product_dict)
-            product_dict[constant.PRODUCT_ID] = new_doc[-1].id
-            if constant.INTENT_FILE_PATH in product_dict:
-                intent_response = manage_product_intents(
-                    product_dict[constant.PRODUCT_ID])
-                if intent_response.status_code == 400:
-                    intent_response = intent_response.json
-                    intent_response.update({constant.DATA: product_dict})
-                    resp = jsonify(intent_response)
-                    resp.status_code = 400
-                    return resp
-        else:
-            return product_duplicate
-    else:
+    if validate_resp != "":
         return validate_resp
+    product_name = request.form[constant.NAME]
+    product_bucket_name = "".join(
+        char for char in product_name if char.isalnum()
+    ).lower()
+    product_duplicate = pv.is_duplicate_product(
+        product_bucket_name=product_bucket_name
+    )
+    if product_duplicate != 0:
+        return product_duplicate
+    customer_id = request.form[constant.CUSTOMER_ID]
+    product_dict[constant.CUSTOMER_ID] = customer_id
+    product_dict[constant.NAME] = request.form[constant.NAME]
+    product_dict[constant.LABEL] = request.form[constant.LABEL]
+    product_dict[constant.DESCRIPTION] = request.form[constant.DESCRIPTION]
+    product_dict[constant.CATEGORY_ID] = request.form[constant.CATEGORY_ID]
+    product_dict[constant.METADATA] = request.form[constant.METADATA]
+    product_dict[constant.IMAGE_STATUS] = 0
+    product_dict[constant.TRAINING_STATUS] = 0
+    product_dict[constant.IS_DELETED] = False
+    product_dict["product_display_id"] = str(int(time.time())).split(
+        ".", maxsplit=1
+    )[0]
+    product_dict[constant.PRODUCT_BUCKET_NAME] = product_bucket_name
+    doc = fsh.get_customer_by_id(customer_id).to_dict()
+    customer_bucket_name = doc[constant.BUCKET_NAME]
+    product_dict[constant.CUSTOMER_BUCKET_NAME] = customer_bucket_name
+    product_dict[constant.CUSTOMER_NAME] = doc[constant.NAME]
+    category_doc = fsh.get_product_category_by_id(
+        category_id=request.form[constant.CATEGORY_ID]
+    ).to_dict()
+    product_dict[constant.CATEGORY_NAME] = category_doc[constant.CATEGORY]
+    product_dict[constant.CATEGORY_CODE] = category_doc[constant.CATEGORY_CODE]
+    video_file_path = request.files[constant.VIDEO_FILE_PATH]
+    product_dict[constant.VIDEO_FILE_PATH] = fv.upload_video_file(
+        customer_bucket_name=customer_bucket_name,
+        product_bucket_name=product_bucket_name,
+        video_file_path=video_file_path,
+    )
+    if (
+        constant.INTENT_FILE_PATH in request.files
+        and request.files[constant.INTENT_FILE_PATH]
+        and request.files[constant.INTENT_FILE_PATH].filename != ""
+    ):
+        intent_file_path = request.files[constant.INTENT_FILE_PATH]
+        product_dict[constant.INTENT_FILE_PATH] = fv.upload_intent_file(
+            customer_bucket_name=customer_bucket_name,
+            product_bucket_name=product_bucket_name,
+            intent_file_path=intent_file_path,
+        )
+
+    # Create New Page for the product
+    agent_id = fsh.get_agent_id_by_customer_id(customer_id)
+    new_product_page = df.create_product_page(agent_id, product_name)
+    product_dict[constant.PRODUCT_PAGE_ID] = new_product_page.name.split(
+        "/")[-1]
+
+    # Link product page to Default/anchor product page
+    anchor_product_page_id = fsh.get_anchor_product_page(customer_id)
+    resp = df.add_route_for_product_name_page(
+        agent_id, anchor_product_page_id, new_product_page)
+    print(resp)
+
+    new_doc = fsh.add_product(product_dict=product_dict)
+    product_dict[constant.PRODUCT_ID] = new_doc[-1].id
+    if constant.INTENT_FILE_PATH in product_dict:
+        intent_response = manage_product_intents(
+            product_dict[constant.PRODUCT_ID])
+        if intent_response.status_code == 400:
+            intent_response = intent_response.json
+            intent_response.update({constant.DATA: product_dict})
+            resp = jsonify(intent_response)
+            resp.status_code = 400
+            return resp
     psh.push_to_pubsub(
         product_id=product_dict[constant.PRODUCT_ID],
         video_file_path=product_dict[constant.VIDEO_FILE_PATH],
