@@ -17,6 +17,9 @@ from src.helpers.gCloud import dialogflow as df
 from src.security.authorize import authorize
 from src.helpers.gCloud import vision_product_search as vps
 
+PROJECT_ID_VALUE = os.getenv(
+    constant.PROJECT_ID, constant.DEFAULT_PROJECT_NAME)
+
 ROUTE = "/product"
 
 
@@ -285,7 +288,5 @@ def delete_vision_product(product_id):
     """
     Delete products Id
     """
-    vps.delete_product(project_id=os.getenv(
-        constant.PROJECT_ID, constant.DEFAULT_PROJECT_NAME), location="us-west1", product_id=product_id)
-    vps.list_reference_images(location="us-west1", product_id=product_id,
-                              project_id=os.getenv(constant.PROJECT_ID, constant.DEFAULT_PROJECT_NAME))
+    vps.delete_product(project_id=PROJECT_ID_VALUE,
+                       location=constant.US_WEST_1, product_id=product_id)

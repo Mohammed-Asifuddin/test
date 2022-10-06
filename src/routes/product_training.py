@@ -12,6 +12,8 @@ from src.helpers import constant
 from src.helpers.gCloud import firestore_helper as fsh
 from src.helpers.gCloud import vision_product_search as vps
 
+PROJECT_ID_VALUE = os.getenv(
+    constant.PROJECT_ID, constant.DEFAULT_PROJECT_NAME)
 
 @app.route("/product-training", methods=["POST"])
 @cross_origin()
@@ -144,9 +146,8 @@ def save_csv_into_gcs(customer_bucket_name, rows):
     print("CSV Generated and uploaded")
     gcs_uri = "gs://" + customer_bucket_name + "/" + csv_file_path
     vps.import_product_sets(
-        project_id=os.getenv(constant.PROJECT_ID,
-                             constant.DEFAULT_PROJECT_NAME),
-        location="us-west1",
+        project_id=PROJECT_ID_VALUE,
+        location=constant.US_WEST_1,
         gcs_uri=gcs_uri,
     )
 

@@ -18,106 +18,8 @@ from src.helpers.gCloud import vision_product_search as vps
 
 ROUTE = "/customer"
 
-
-def validate_files_as_mandatory(files, file_type):
-    """
-    File validator as mandatory
-    """
-    if file_type not in files:
-        resp = jsonify({constant.MESSAGE: file_type + " is mandatory."})
-        resp.status_code = 400
-        return resp
-    file = files[file_type]
-    if file.filename == "":
-        resp = jsonify({constant.MESSAGE: "No " +
-                       file_type + " part in the request"})
-        resp.status_code = 400
-        return resp
-    if (not fv.allowed_image_file(file.filename)) and (
-        file_type == constant.LOGO_FILE_PATH
-    ):
-        resp = jsonify({constant.MESSAGE: constant.ALLOWED_IMAGES_MESSAGE})
-        resp.status_code = 400
-        return resp
-    if (not fv.allowed_video_file(file.filename)) and (
-        file_type == constant.VIDEO_FILE_PATH
-    ):
-        resp = jsonify({constant.MESSAGE: constant.ALLOWED_VIDEO_MESSAGE})
-        resp.status_code = 400
-        return resp
-    return ""
-
-
-def validate_files_as_optional(files, file_type):
-    """
-    File validator as optional
-    """
-    if (file_type in files) and (files[file_type]):
-        file = files[file_type]
-        if (
-            not fv.allowed_image_file(file.filename)
-            and file_type == constant.LOGO_FILE_PATH
-        ):
-            resp = jsonify({constant.MESSAGE: constant.ALLOWED_IMAGES_MESSAGE})
-            resp.status_code = 400
-            return resp
-        if (
-            not fv.allowed_intent_file(file.filename)
-            and file_type == constant.INTENT_FILE_PATH
-        ):
-            resp = jsonify({constant.MESSAGE: constant.ALLOWED_INTENT_MESSAGE})
-            resp.status_code = 400
-            return resp
-        if (
-            not fv.allowed_video_file(file.filename)
-            and file_type == constant.VIDEO_FILE_PATH
-        ):
-            resp = jsonify({constant.MESSAGE: constant.ALLOWED_VIDEO_MESSAGE})
-            resp.status_code = 400
-            return resp
-    return ""
-
-
-def is_duplicate_customer(name):
-    """
-    Validate is customer is duplicate.
-    """
-    bucket_name = "".join(char for char in name if char.isalnum()).lower()
-    list_customers = []
-    docs = fh.get_all_customers()
-    for doc in docs:
-        data = doc.to_dict()
-        customer_name = data[constant.NAME]
-        customer_name = "".join(
-            char for char in customer_name if char.isalnum()
-        ).lower()
-        list_customers.append(customer_name)
-    if bucket_name not in list_customers:
-        return 0
-    resp = jsonify({constant.MESSAGE: constant.CUSTOMER_EXISTS_MESSAGE})
-    resp.status_code = 400
-    return resp
-
-
-def customer_id_validation(customer_id):
-    """
-    Update status common code
-    """
-    if customer_id.strip() == "":
-        resp = jsonify({constant.MESSAGE: constant.CUSTOMER_BLANK_MESSAGE})
-        resp.status_code = 400
-        return resp
-    docs = fh.get_customer_by_id(customer_id)
-    if not docs.exists:
-        resp = jsonify({constant.MESSAGE: constant.CUSTOMER_NO_DATA_MESSAGE})
-        resp.status_code = 400
-        return resp
-    doc = docs.to_dict()
-    if doc[constant.IS_DELETED]:
-        resp = jsonify({constant.MESSAGE: constant.CUSTOMER_DELETED_MESSAGE})
-        resp.status_code = 400
-        return resp
-    return doc
+PROJECT_ID_VALUE = os.getenv(
+    constant.PROJECT_ID, constant.DEFAULT_PROJECT_NAME)
 
 
 @app.route(ROUTE, methods=["POST"])
@@ -353,8 +255,8 @@ def delete_customer(customer_id):
         data = doc.to_dict()
         data[constant.IS_DELETED] = True
         fh.update_product_by_id(doc_id=doc.id, doc_dict=data)
-    vps.delete_product_set(project_id=os.getenv(constant.PROJECT_ID, constant.DEFAULT_PROJECT_NAME),
-                           location="us-west1", product_set_id=customer_bucket_name)
+    vps.delete_product_set(project_id=PROJECT_ID_VALUE,
+                           location=constant.US_WEST_1, product_set_id=customer_bucket_name)
     resp = jsonify(
         {constant.MESSAGE: constant.CUSTOMER_DELETED_MESSAGE_SUCCESS})
     resp.status_code = 200
@@ -432,3 +334,104 @@ def download_customer_intents(customer_id):
     Downloads a CSV file of customer intents
     """
     return intents.download_to_csv(customer_id, "")
+
+
+def validate_files_as_mandatory(files, file_type):
+    """
+    File validator as mandatory
+    """
+    if file_type not in files:
+        resp = jsonify({constant.MESSAGE: file_type + " is mandatory."})
+        resp.status_code = 400
+        return resp
+    file = files[file_type]
+    if file.filename == "":
+        resp = jsonify({constant.MESSAGE: "No " +
+                       file_type + " part in the request"})
+        resp.status_code = 400
+        return resp
+    if (not fv.allowed_image_file(file.filename)) and (
+        file_type == constant.LOGO_FILE_PATH
+    ):
+        resp = jsonify({constant.MESSAGE: constant.ALLOWED_IMAGES_MESSAGE})
+        resp.status_code = 400
+        return resp
+    if (not fv.allowed_video_file(file.filename)) and (
+        file_type == constant.VIDEO_FILE_PATH
+    ):
+        resp = jsonify({constant.MESSAGE: constant.ALLOWED_VIDEO_MESSAGE})
+        resp.status_code = 400
+        return resp
+    return ""
+
+
+def validate_files_as_optional(files, file_type):
+    """
+    File validator as optional
+    """
+    if (file_type in files) and (files[file_type]):
+        file = files[file_type]
+        if (
+            not fv.allowed_image_file(file.filename)
+            and file_type == constant.LOGO_FILE_PATH
+        ):
+            resp = jsonify({constant.MESSAGE: constant.ALLOWED_IMAGES_MESSAGE})
+            resp.status_code = 400
+            return resp
+        if (
+            not fv.allowed_intent_file(file.filename)
+            and file_type == constant.INTENT_FILE_PATH
+        ):
+            resp = jsonify({constant.MESSAGE: constant.ALLOWED_INTENT_MESSAGE})
+            resp.status_code = 400
+            return resp
+        if (
+            not fv.allowed_video_file(file.filename)
+            and file_type == constant.VIDEO_FILE_PATH
+        ):
+            resp = jsonify({constant.MESSAGE: constant.ALLOWED_VIDEO_MESSAGE})
+            resp.status_code = 400
+            return resp
+    return ""
+
+
+def is_duplicate_customer(name):
+    """
+    Validate is customer is duplicate.
+    """
+    bucket_name = "".join(char for char in name if char.isalnum()).lower()
+    list_customers = []
+    docs = fh.get_all_customers()
+    for doc in docs:
+        data = doc.to_dict()
+        customer_name = data[constant.NAME]
+        customer_name = "".join(
+            char for char in customer_name if char.isalnum()
+        ).lower()
+        list_customers.append(customer_name)
+    if bucket_name not in list_customers:
+        return 0
+    resp = jsonify({constant.MESSAGE: constant.CUSTOMER_EXISTS_MESSAGE})
+    resp.status_code = 400
+    return resp
+
+
+def customer_id_validation(customer_id):
+    """
+    Update status common code
+    """
+    if customer_id.strip() == "":
+        resp = jsonify({constant.MESSAGE: constant.CUSTOMER_BLANK_MESSAGE})
+        resp.status_code = 400
+        return resp
+    docs = fh.get_customer_by_id(customer_id)
+    if not docs.exists:
+        resp = jsonify({constant.MESSAGE: constant.CUSTOMER_NO_DATA_MESSAGE})
+        resp.status_code = 400
+        return resp
+    doc = docs.to_dict()
+    if doc[constant.IS_DELETED]:
+        resp = jsonify({constant.MESSAGE: constant.CUSTOMER_DELETED_MESSAGE})
+        resp.status_code = 400
+        return resp
+    return doc

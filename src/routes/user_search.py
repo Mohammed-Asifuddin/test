@@ -13,6 +13,8 @@ from src.security.authorize import authorize
 from src.helpers.gCloud import text_to_speech_helper as ts
 from src.helpers.gCloud import storage_handler as sh
 
+project_id = os.getenv(constant.PROJECT_ID, constant.DEFAULT_PROJECT_NAME)
+
 
 @app.route("/api/user/search", methods=["POST"])
 @cross_origin()
@@ -29,8 +31,7 @@ def search_product():
             active_customer[constant.CUSTOMER_ID]
         )
         product_categories = [*set(product_categories)]
-        project_id = os.getenv(constant.PROJECT_ID,
-                               constant.DEFAULT_PROJECT_NAME)
+
         location = "us-west1"
         response = vps.get_similar_products_file(
             project_id=project_id,
@@ -97,53 +98,17 @@ def get_user_details():
                    constant.TOKEN: smh.get_user_flow_token()})
     return resp
 
-
-@app.route("/api/text-to-speech", methods=["POST"])
-@cross_origin()
-@authorize()
-def convert_text_to_speech():
-    """
-    Provides username and password details
-    """
-    session_id = request.headers.get('session_id')
-    print("session_id"+session_id)
-    if session_id == "" or session_id.strip() == "":
-        resp = jsonify({constant.MESSAGE: "Unidentified user."})
-        resp.status_code = 400
-        return resp
-    text = request.get_json()["text"]
-    if text == "" or text.strip() == "":
-        resp = jsonify({constant.MESSAGE: "Text is mandatory"})
-        resp.status_code = 400
-        return resp
-    response = ts.convert_text_to_speech(text)
-    print("Text to Speech Session Id : "+ session_id)
-    sh.upload_audio_file(response=response,session_id=session_id)
-    resp = jsonify({constant.MESSAGE: "Success"})
-    return resp
-
 @app.route("/api/get-text-to-speech", methods=["GET"])
 @cross_origin()
-#@authorize()
-def convert_text_to_speech2():
+# @authorize()
+def convert_text_to_speech():
     """
-    Provides username and password details
+    Text to Speech convert using GCP Component.
     """
-    """ session_id = request.headers.get('session_id')
-    print("session_id"+session_id)
-    if session_id == "" or session_id.strip() == "":
-        resp = jsonify({constant.MESSAGE: "Unidentified user."})
-        resp.status_code = 400
-        return resp """
     text = request.args.get("text")
     if text == "" or text.strip() == "":
         resp = jsonify({constant.MESSAGE: "Text is mandatory"})
         resp.status_code = 400
         return resp
     response = ts.convert_text_to_speech(text)
-    #url = sh.upload_audio_file(response=response,session_id=session_id)
-    #return Response(response,mimetype="audio/x-wav")
-    return Response(response,mimetype="audio/mpeg")
-    #resp = jsonify({constant.MESSAGE: "Success","audio_file_url": url})
-    #return resp
-    
+    return Response(response, mimetype="audio/mpeg")
