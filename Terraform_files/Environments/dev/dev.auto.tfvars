@@ -1,11 +1,11 @@
 project_id = "centering-cable-362607"
 
-env        = "dev"
+env = "dev"
 
-region="us-west1"
-topic_name = "btl_video_to_image"
+region      = "us-west1"
+topic_name  = "btl_video_to_image"
 topic_name2 = "startDatastoreExport"
-time_zone = "America/Los_Angeles"
+time_zone   = "America/Los_Angeles"
 api_enabled_project = [
   "cloudfunctions.googleapis.com",
   "pubsub.googleapis.com",
@@ -20,7 +20,8 @@ api_enabled_project = [
   "run.googleapis.com",
   "firestore.googleapis.com",
   "firebase.googleapis.com",
-  "compute.googleapis.com"
+  "compute.googleapis.com",
+  "texttospeech.googleapis.com"
 
 ]
 iam_permissions_sa_1 = [
@@ -39,7 +40,8 @@ iam_permissions_sa_1 = [
   "roles/logging.logWriter",
   "roles/iam.serviceAccountUser",
   "roles/aiplatform.admin",
-  "roles/datastore.importExportAdmin"
+  "roles/datastore.importExportAdmin",
+  "roles/speech.admin"
 ]
 
 
@@ -58,9 +60,9 @@ branchs    = ["secret-manager-integration", "btl-client", "admin-ui-base"]
 file_paths = ["cloudbuild.yaml", "cloudbuild.yaml", "cloudbuild.yaml"]
 repo_names = ["btl-backend-trigger", "btl-client-ui-trigger", "btl-admin-ui-trigger"]
 
-scheduler_url = "https://replacewithcloudrunurl/product-training"
-scheduler_url2 = "https://replacewithcloudrunurl/backup"
-scheduler_freq = "0 */1 * * *"
+scheduler_url   = "https://replacewithcloudrunurl/product-training"
+scheduler_url2  = "https://replacewithcloudrunurl/backup"
+scheduler_freq  = "0 */1 * * *"
 scheduler_freq2 = "0 0 * * SUN"
 
 
