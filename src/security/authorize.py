@@ -15,7 +15,7 @@ def authorize():
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kws):
-            if not 'Authorization' in request.headers:
+            if 'Authorization' not in request.headers:
                 print("No header Authorization")
                 abort(401)
             user = None
@@ -24,8 +24,6 @@ def authorize():
             auth_token = str(data)
             try:
                 user = auth.verify_id_token(auth_token)
-                # print("User:")
-                # print(user)
                 user_details = db.collection('Users').where('email', '==', user['email']).where('is_active', '==', True).get()
                 if len(user_details) <= 0:
                     print("ERROR: could not find user")

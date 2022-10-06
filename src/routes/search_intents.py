@@ -16,7 +16,6 @@ from src.security.authorize import authorize
 
 ROUTE = "/detectIntent"
 
-
 @app.route(ROUTE, methods=["POST"])
 @cross_origin()
 @authorize()
@@ -48,8 +47,6 @@ def detect_intent():
             session=session_path, query_input=query_input
         )
         response = session_client.detect_intent(request=detect_intent_request)
-        # print(response.query_result.intent.display_name)
-        # print(response.query_result.response_messages)
         response_messages = [
             " ".join(msg.text.text) for msg in response.query_result.response_messages
         ]

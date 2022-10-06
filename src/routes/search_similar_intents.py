@@ -41,8 +41,6 @@ def detect_intent(agent, session_id, text_input):
             session=session_path, query_input=query_input
         )
         response = session_client.detect_intent(request=detect_intent_request)
-        # print(response.query_result.intent.display_name)
-        # print(response.query_result.response_messages)
         response_messages = [
             " ".join(msg.text.text) for msg in response.query_result.response_messages
         ]
