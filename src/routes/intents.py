@@ -176,7 +176,8 @@ def upsert_intent(intent_id, intent_name, intent_action, intent_desc, training_p
     intent.training_phrases = phrases_array
     resp = ""
     if intent_action=="":
-        return f'Skipping intent with {len(intent.training_phrases)} phrases.'
+        print(f'Skipping intent with {len(intent.training_phrases)} phrases.')
+        return resp
     elif intent_action.lower()==constant.CREATE:
         print(f'Creating {intent.display_name} with {len(intent.training_phrases)} phrases.')
         resp = create_intent(intent, parent, customer_id, product_id, agent_id)
@@ -187,9 +188,11 @@ def upsert_intent(intent_id, intent_name, intent_action, intent_desc, training_p
     elif intent_action.lower()==constant.DELETE:
         intent.name = f'{parent}/intents/{intent_id}'
         intent_ids_to_delete.append(intent.name)
-        return f'Deleting {intent.display_name} with {len(intent.training_phrases)} phrases.'
+        print(f'Deleting {intent.display_name} with {len(intent.training_phrases)} phrases.')
+        return resp
     else:
-        return f'Invalid Action {intent_action} in CSV.'
+        print(f'Invalid Action {intent_action} in CSV.')
+        return resp
     if resp!="" and resp.status_code==200 and resp.name!="":
         intent_responses[resp.name] = fulfillments
     return resp
@@ -355,23 +358,24 @@ def add_update_delete_intents(customer_id, product_id):
             for row in reader:
                 if row[constant.COLUMN_ACTION]=="" and row[constant.COLUMN_ID]!="" and len(training_phrases)>0:
                     existing_intent = True
+                    continue
                 elif not existing_intent and row[constant.COLUMN_ACTION]=="":
                     training_phrases.append(row[constant.TRAINING_PHRASES])
+                    continue
+                if training_phrases:
+                    response = upsert_intent(intent_id, intent_name, intent_action, intent_desc, training_phrases, parent, customer_id, product_id, agent_id, fulfillments, intent_responses, intent_ids_to_delete)
+                    if response!="" and response.status_code==400:
+                        return response
+                    training_phrases.clear()
+                    existing_intent = False
+                training_phrases.append(row[constant.TRAINING_PHRASES])
+                if row[constant.COLUMN_ID] is None or row[constant.COLUMN_ID]=='':
+                    intent_id = ""
                 else:
-                    if training_phrases:
-                        response = upsert_intent(intent_id, intent_name, intent_action, intent_desc, training_phrases, parent, customer_id, product_id, agent_id, fulfillments, intent_responses, intent_ids_to_delete)
-                        if response.status_code==400:
-                            return response
-                        training_phrases.clear()
-                        existing_intent = False
-                    training_phrases.append(row[constant.TRAINING_PHRASES])
-                    if row[constant.COLUMN_ID] is None or row[constant.COLUMN_ID]=='':
-                        intent_id = ""
-                    else:
-                        intent_id = intent_ids[row[constant.COLUMN_ID]]
-                    intent_name, intent_desc, intent_action, fulfillments = row[constant.COLUMN_NAME], row[constant.COLUMN_DESCRIPTION], row[constant.COLUMN_ACTION], row[constant.COLUMN_RESPONSE]
+                    intent_id = intent_ids[row[constant.COLUMN_ID]]
+                intent_name, intent_desc, intent_action, fulfillments = row[constant.COLUMN_NAME], row[constant.COLUMN_DESCRIPTION], row[constant.COLUMN_ACTION], row[constant.COLUMN_RESPONSE]
             response = upsert_intent(intent_id, intent_name, intent_action, intent_desc, training_phrases, parent, customer_id, product_id, agent_id, fulfillments, intent_responses, intent_ids_to_delete)
-            if response.status_code==400:
+            if  response!="" and response.status_code==400:
                 return response
             training_phrases.clear()
 
