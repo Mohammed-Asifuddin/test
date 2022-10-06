@@ -325,6 +325,24 @@ def update_flow(flow, intents, intent_ids_to_delete):
         resp.status_code = 400
         return resp
 
+def update_dialogflow(agent_id, customer_id, product_id, parent, intent_responses, intent_ids_to_delete):
+    """
+    Updates flows and default page in DialogFlow
+    """
+    if customer_id != "":
+        #Updating the default start flow with all the intent routes
+        flow_path = f'{parent}/flows/{constant.DEFAULT_FLOW_ID}'
+        flow_request = dialogflowcx_v3.GetFlowRequest(name=flow_path)
+        flow = flows_client.get_flow(flow_request)
+        update_flow(flow, intent_responses, intent_ids_to_delete)
+    if product_id != "":
+        product_page_id = fh.get_product_page_id(product_id)
+        df.update_product_page(agent_id, product_page_id, intent_responses, intent_ids_to_delete)
+
+    #Deleting intents marked for deletion
+    for intent in intent_ids_to_delete:
+        delete_intent(intent)
+
 def add_update_delete_intents(customer_id, product_id):
     """
     Iterates over the CSV to process the intents and routes appropriate intent API calls
@@ -379,20 +397,7 @@ def add_update_delete_intents(customer_id, product_id):
                 return response
             training_phrases.clear()
 
-        if customer_id != "":
-            #Updating the default start flow with all the intent routes
-            intent_ids = get_actual_intent_ids(customer_id, product_id)
-            flow_path = f'{parent}/flows/{constant.DEFAULT_FLOW_ID}'
-            flow_request = dialogflowcx_v3.GetFlowRequest(name=flow_path)
-            flow = flows_client.get_flow(flow_request)
-            update_flow(flow, intent_responses, intent_ids_to_delete)
-        if product_id != "":
-            product_page_id = fh.get_product_page_id(product_id)
-            df.update_product_page(agent_id, product_page_id, intent_responses, intent_ids_to_delete)
-
-        #Deleting intents marked for deletion
-        for intent in intent_ids_to_delete:
-            delete_intent(intent)
+        update_dialogflow(agent_id, customer_id, product_id, parent, intent_responses, intent_ids_to_delete)
 
     except FileNotFoundError:
         traceback.print_exc()
