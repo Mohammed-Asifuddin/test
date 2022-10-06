@@ -1,16 +1,11 @@
 """
 Google cloud storage file handler
 """
-import os
 import time
 from datetime import datetime, timezone, timedelta
 from google.cloud import storage
 from google import auth
 from google.auth.transport import requests
-from src.helpers import constant
-
-project_id = os.getenv(constant.PROJECT_ID,constant.DEFAULT_PROJECT_NAME)
-audio_bucket_name=project_id+"_userflow_audio_backups"
 
 def create_bucket(bucket_name):
     """
