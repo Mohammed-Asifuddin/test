@@ -343,9 +343,49 @@ def update_dialogflow(agent_id, customer_id, product_id, parent, intent_response
     for intent in intent_ids_to_delete:
         delete_intent(intent)
 
+def read_intent_csv(intent_path, parent, customer_id, product_id, agent_id, intent_ids):
+    """
+    Updates flows and default page in DialogFlow
+    """
+    gs_file_system = gcsfs.GCSFileSystem(project=PROJECT_ID)
+    with gs_file_system.open(intent_path, 'r') as csvfile:
+        reader = csv.DictReader(csvfile)
+        training_phrases = []
+        intent_id = ""
+        intent_name = ""
+        intent_action = ""
+        intent_desc = ""
+        fulfillments = ""
+        response = ""
+        intent_responses = {}
+        intent_ids_to_delete = []
+        existing_intent = False
+        for row in reader:
+            if row[constant.COLUMN_ACTION]=="" and row[constant.COLUMN_ID]!="" and len(training_phrases)>0:
+                existing_intent = True
+                continue
+            elif not existing_intent and row[constant.COLUMN_ACTION]=="":
+                training_phrases.append(row[constant.TRAINING_PHRASES])
+                continue
+            if training_phrases:
+                response = upsert_intent(intent_id, intent_name, intent_action, intent_desc, training_phrases, parent, customer_id, product_id, agent_id, fulfillments, intent_responses, intent_ids_to_delete)
+                if response!="" and response.status_code==400:
+                    return response
+                training_phrases.clear()
+                existing_intent = False
+            training_phrases.append(row[constant.TRAINING_PHRASES])
+            if row[constant.COLUMN_ID] is None or row[constant.COLUMN_ID]=='':
+                intent_id = ""
+            else:
+                intent_id = intent_ids[row[constant.COLUMN_ID]]
+            intent_name, intent_desc, intent_action, fulfillments = row[constant.COLUMN_NAME], row[constant.COLUMN_DESCRIPTION], row[constant.COLUMN_ACTION], row[constant.COLUMN_RESPONSE]
+        response = upsert_intent(intent_id, intent_name, intent_action, intent_desc, training_phrases, parent, customer_id, product_id, agent_id, fulfillments, intent_responses, intent_ids_to_delete)
+        training_phrases.clear()
+        return response, intent_responses, intent_ids_to_delete
+
 def add_update_delete_intents(customer_id, product_id):
     """
-    Iterates over the CSV to process the intents and routes appropriate intent API calls
+    Updates intents for Customer/Product with entries from the intent CSV
     """
     agent_id = get_agent_id(customer_id, product_id)
     parent = f'projects/{PROJECT_ID}/locations/{constant.LOCATION_ID}/agents/{agent_id}'
@@ -358,44 +398,11 @@ def add_update_delete_intents(customer_id, product_id):
 
     try:
         intent_path = get_intent_path(customer_id, product_id)
-        gs_file_system = gcsfs.GCSFileSystem(project=PROJECT_ID)
         intent_ids = get_actual_intent_ids(customer_id, product_id)
 
-        with gs_file_system.open(intent_path, 'r') as csvfile:
-            reader = csv.DictReader(csvfile)
-            training_phrases = []
-            intent_id = ""
-            intent_name = ""
-            intent_action = ""
-            intent_desc = ""
-            fulfillments = ""
-            response = ""
-            intent_responses = {}
-            intent_ids_to_delete = []
-            existing_intent = False
-            for row in reader:
-                if row[constant.COLUMN_ACTION]=="" and row[constant.COLUMN_ID]!="" and len(training_phrases)>0:
-                    existing_intent = True
-                    continue
-                elif not existing_intent and row[constant.COLUMN_ACTION]=="":
-                    training_phrases.append(row[constant.TRAINING_PHRASES])
-                    continue
-                if training_phrases:
-                    response = upsert_intent(intent_id, intent_name, intent_action, intent_desc, training_phrases, parent, customer_id, product_id, agent_id, fulfillments, intent_responses, intent_ids_to_delete)
-                    if response!="" and response.status_code==400:
-                        return response
-                    training_phrases.clear()
-                    existing_intent = False
-                training_phrases.append(row[constant.TRAINING_PHRASES])
-                if row[constant.COLUMN_ID] is None or row[constant.COLUMN_ID]=='':
-                    intent_id = ""
-                else:
-                    intent_id = intent_ids[row[constant.COLUMN_ID]]
-                intent_name, intent_desc, intent_action, fulfillments = row[constant.COLUMN_NAME], row[constant.COLUMN_DESCRIPTION], row[constant.COLUMN_ACTION], row[constant.COLUMN_RESPONSE]
-            response = upsert_intent(intent_id, intent_name, intent_action, intent_desc, training_phrases, parent, customer_id, product_id, agent_id, fulfillments, intent_responses, intent_ids_to_delete)
-            if  response!="" and response.status_code==400:
-                return response
-            training_phrases.clear()
+        response, intent_responses, intent_ids_to_delete = read_intent_csv(intent_path, parent, customer_id, product_id, agent_id, intent_ids)
+        if response!="" and response.status_code==400:
+            return response
 
         update_dialogflow(agent_id, customer_id, product_id, parent, intent_responses, intent_ids_to_delete)
 
