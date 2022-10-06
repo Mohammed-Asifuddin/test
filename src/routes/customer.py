@@ -14,6 +14,7 @@ from src.helpers.gCloud import dialogflow as df
 from src.helpers import constant
 from src.routes import intents
 from src.security.authorize import authorize
+from src.helpers.gCloud import vision_product_search as vps
 
 ROUTE = "/customer"
 
@@ -28,7 +29,8 @@ def validate_files_as_mandatory(files, file_type):
         return resp
     file = files[file_type]
     if file.filename == "":
-        resp = jsonify({constant.MESSAGE: "No " + file_type + " part in the request"})
+        resp = jsonify({constant.MESSAGE: "No " +
+                       file_type + " part in the request"})
         resp.status_code = 400
         return resp
     if (not fv.allowed_image_file(file.filename)) and (
@@ -185,19 +187,24 @@ def create_customer():
     agent_dict[constant.DISPLAY_NAME] = name
     fh.add_agent(agent_dict=agent_dict)
 
-    #Adding DF changes for initializing new Agent
-    anchor_product_page_resp = df.create_default_product_page(project_id, agent_dict[constant.AGENT_ID])
-    #Add product_page_resp.name to the customer collection
-    customer_dict[constant.ANCHOR_PRODUCT_PAGE] = anchor_product_page_resp.name.split("/")[-1]
-    fh.update_customer_by_id(customer_dict[constant.CUSTOMER_ID], customer_dict)
+    # Adding DF changes for initializing new Agent
+    anchor_product_page_resp = df.create_default_product_page(
+        project_id, agent_dict[constant.AGENT_ID])
+    # Add product_page_resp.name to the customer collection
+    customer_dict[constant.ANCHOR_PRODUCT_PAGE] = anchor_product_page_resp.name.split(
+        "/")[-1]
+    fh.update_customer_by_id(
+        customer_dict[constant.CUSTOMER_ID], customer_dict)
 
-    #Links Start Page to anchor product page
-    linked_product_page_resp = df.update_default_flow(project_id, agent_dict[constant.AGENT_ID], customer_dict[constant.ANCHOR_PRODUCT_PAGE])
+    # Links Start Page to anchor product page
+    linked_product_page_resp = df.update_default_flow(
+        project_id, agent_dict[constant.AGENT_ID], customer_dict[constant.ANCHOR_PRODUCT_PAGE])
     print(linked_product_page_resp)
 
     if constant.INTENT_FILE_PATH in customer_dict:
-        intent_response = manage_customer_intents(customer_dict[constant.CUSTOMER_ID])
-        if intent_response.status_code==400:
+        intent_response = manage_customer_intents(
+            customer_dict[constant.CUSTOMER_ID])
+        if intent_response.status_code == 400:
             intent_response = intent_response.json
             intent_response.update({constant.DATA: customer_dict})
             resp = jsonify(intent_response)
@@ -272,14 +279,15 @@ def update_customer():
     fh.update_customer_by_id(doc_id=customer_id, doc_dict=doc)
     if constant.INTENT_FILE_PATH in doc:
         intent_response = manage_customer_intents(customer_id)
-        if intent_response.status_code==400:
+        if intent_response.status_code == 400:
             intent_response = intent_response.json
             intent_response.update({constant.DATA: doc})
             resp = jsonify(intent_response)
             resp.status_code = 400
             return resp
 
-    resp = jsonify({constant.MESSAGE: constant.CUSTOMER_UPDATED, constant.DATA: doc})
+    resp = jsonify(
+        {constant.MESSAGE: constant.CUSTOMER_UPDATED, constant.DATA: doc})
     print("Customer Updated.")
     return resp, status.HTTP_200_OK
 
@@ -338,13 +346,17 @@ def delete_customer(customer_id):
     if not isinstance(doc, (dict)):
         return doc
     doc["is_deleted"] = True
+    customer_bucket_name = doc[constant.BUCKET_NAME]
     fh.update_customer_by_id(doc_id=customer_id, doc_dict=doc)
     docs = fh.get_all_products_by_customer_id(customer_id=customer_id)
     for doc in docs:
         data = doc.to_dict()
         data[constant.IS_DELETED] = True
-        fh.update_product_by_id(doc_id=doc.id, doc_dict= data)
-    resp = jsonify({constant.MESSAGE: constant.CUSTOMER_DELETED_MESSAGE_SUCCESS})
+        fh.update_product_by_id(doc_id=doc.id, doc_dict=data)
+    vps.delete_product_set(project_id=os.getenv(constant.PROJECT_ID, constant.DEFAULT_PROJECT_NAME),
+                           location="us-west1", product_set_id=customer_bucket_name)
+    resp = jsonify(
+        {constant.MESSAGE: constant.CUSTOMER_DELETED_MESSAGE_SUCCESS})
     resp.status_code = 200
     return resp
 
@@ -364,7 +376,8 @@ def update_customer_status():
         and request.form[constant.CURRENT_CUSTOMER_ID] != ""
     ):
         current_customer_id = request.form[constant.CURRENT_CUSTOMER_ID]
-        current_customer_doc = customer_id_validation(customer_id=current_customer_id)
+        current_customer_doc = customer_id_validation(
+            customer_id=current_customer_id)
         if not isinstance(current_customer_doc, (dict)):
             return current_customer_doc
         current_customer_doc[constant.STATUS] = False
@@ -386,7 +399,8 @@ def update_customer_status():
             doc_id=current_customer_id, doc_dict=current_customer_doc
         )
     if len(new_customer_doc.keys()) != 0:
-        fh.update_customer_by_id(doc_id=new_customer_id, doc_dict=new_customer_doc)
+        fh.update_customer_by_id(
+            doc_id=new_customer_id, doc_dict=new_customer_doc)
     resp = jsonify({constant.MESSAGE: constant.CUSTOMER_STATUS_UPDATE_MESSAGE})
     resp.status_code = 200
     return resp

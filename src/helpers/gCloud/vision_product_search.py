@@ -45,3 +45,40 @@ def import_product_sets(project_id, location, gcs_uri):
     print(response)
     print("Processing operation name: {}".format(response.operation.name))
     print("Processing done.")
+
+
+def delete_product(project_id, location, product_id):
+    """Delete the product and all its reference images.
+    Args:
+        project_id: Id of the project.
+        location: A compute region name.
+        product_id: Id of the product.
+    """
+    client = vision.ProductSearchClient()
+
+    # Get the full path of the product.
+    product_path = client.product_path(
+        project=project_id, location=location, product=product_id)
+
+    # Delete a product.
+    client.delete_product(name=product_path)
+    print('Product deleted.')
+
+
+def delete_product_set(project_id, location, product_set_id):
+    """Delete a product set.
+    Args:
+        project_id: Id of the project.
+        location: A compute region name.
+        product_set_id: Id of the product set.
+    """
+    client = vision.ProductSearchClient()
+
+    # Get the full path of the product set.
+    product_set_path = client.product_set_path(
+        project=project_id, location=location,
+        product_set=product_set_id)
+
+    # Delete the product set.
+    client.delete_product_set(name=product_set_path)
+    print('Product set deleted.')

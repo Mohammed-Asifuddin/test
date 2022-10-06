@@ -1,6 +1,7 @@
 """
 Product API service
 """
+import os
 import time
 from flask_cors import cross_origin
 from flask_api import status
@@ -12,9 +13,9 @@ from src.helpers import file_validator as fv
 from src.routes import customer, intents
 from src.helpers import constant
 from src.helpers.gCloud import pubsub_helper as psh
-from src.helpers.gCloud import storage_handler as sh
 from src.helpers.gCloud import dialogflow as df
 from src.security.authorize import authorize
+from src.helpers.gCloud import vision_product_search as vps
 
 ROUTE = "/product"
 
@@ -78,21 +79,24 @@ def add_product():
                     intent_file_path=intent_file_path,
                 )
 
-            #Create New Page for the product
+            # Create New Page for the product
             agent_id = fsh.get_agent_id_by_customer_id(customer_id)
             new_product_page = df.create_product_page(agent_id, product_name)
-            product_dict[constant.PRODUCT_PAGE_ID] = new_product_page.name.split("/")[-1]
+            product_dict[constant.PRODUCT_PAGE_ID] = new_product_page.name.split(
+                "/")[-1]
 
-            #Link product page to Default/anchor product page
+            # Link product page to Default/anchor product page
             anchor_product_page_id = fsh.get_anchor_product_page(customer_id)
-            resp = df.add_route_for_product_name_page(agent_id, anchor_product_page_id, new_product_page)
+            resp = df.add_route_for_product_name_page(
+                agent_id, anchor_product_page_id, new_product_page)
             print(resp)
 
             new_doc = fsh.add_product(product_dict=product_dict)
             product_dict[constant.PRODUCT_ID] = new_doc[-1].id
             if constant.INTENT_FILE_PATH in product_dict:
-                intent_response = manage_product_intents(product_dict[constant.PRODUCT_ID])
-                if intent_response.status_code==400:
+                intent_response = manage_product_intents(
+                    product_dict[constant.PRODUCT_ID])
+                if intent_response.status_code == 400:
                     intent_response = intent_response.json
                     intent_response.update({constant.DATA: product_dict})
                     resp = jsonify(intent_response)
@@ -177,7 +181,7 @@ def update_product():
     fsh.update_product_by_id(doc_id=product_id, doc_dict=doc)
     if constant.INTENT_FILE_PATH in doc:
         intent_response = manage_product_intents(product_id)
-        if intent_response.status_code==400:
+        if intent_response.status_code == 400:
             intent_response = intent_response.json
             intent_response.update({constant.DATA: doc})
             resp = jsonify(intent_response)
@@ -227,6 +231,7 @@ def delete_product(product_id):
         return resp
     doc["is_deleted"] = True
     fsh.update_product_by_id(doc_id=product_id, doc_dict=doc)
+    delete_vision_product(product_id=product_id)
     resp = jsonify({constant.MESSAGE: constant.PRODUCT_DELETE_MESSAGE})
     resp.status_code = 200
     return resp
@@ -274,3 +279,13 @@ def download_product_intents(product_id):
     Downloads a CSV file of product intents
     """
     return intents.download_to_csv("", product_id)
+
+
+def delete_vision_product(product_id):
+    """
+    Delete products Id
+    """
+    vps.delete_product(project_id=os.getenv(
+        constant.PROJECT_ID, constant.DEFAULT_PROJECT_NAME), location="us-west1", product_id=product_id)
+    vps.list_reference_images(location="us-west1", product_id=product_id,
+                              project_id=os.getenv(constant.PROJECT_ID, constant.DEFAULT_PROJECT_NAME))
