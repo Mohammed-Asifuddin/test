@@ -167,7 +167,7 @@ resource "google_cloudbuild_trigger" "btl-triggers" {
     _PROJECT_ID     = var.project_id
     _ADMIN_ENV      = file("admin-environment.prod.ts")
     _USER_ENV      = file("user-flow-environment.prod.ts")
-    _BASE_URL_VALUE = ""
+    _BASE_URL = ""
   }
   // If this is set on a build, it will become pending when it is run, 
   // and will need to be explicitly approved to start.
