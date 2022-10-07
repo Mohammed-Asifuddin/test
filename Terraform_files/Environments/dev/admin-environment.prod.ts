@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  BASE_URL:"$BASE_URL_VALUE",
+  BASE_URL:"BASE_URL_VALUE",
   firebaseConfig :{
     apiKey: "AIzaSyBEHkWpbux1o7ZsyhG-l4AmPEbaasbDyuM",
     authDomain: "retail-btl-dev.firebaseapp.com",
