@@ -58,7 +58,7 @@ module "secret-manager" {
 # }
 resource "random_string" "random" {
   length           = 6
-  special          = true
+  special          = false
   override_special = "/@£$"
   upper            = false
 }
@@ -163,11 +163,12 @@ resource "google_cloudbuild_trigger" "btl-triggers" {
   #   repo_name   = "${var.repo_names[count.index]}"
   # }
   #substitutions = var.substitutions
-  // If this is set on a build, it will become pending when it is run, 
-  // and will need to be explicitly approved to start.
-  substitutions = {
+   substitutions = {
     _PROJECT_ID     = var.project_id
   }
+  // If this is set on a build, it will become pending when it is run, 
+  // and will need to be explicitly approved to start.
+ 
   approval_config {
     approval_required = false
   }
