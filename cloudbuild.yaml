@@ -17,6 +17,8 @@
    - '--region'
    - 'us-west1'
    - '--allow-unauthenticated'
+   - "--set-env-vars"
+   - "PROJECT_ID=$PROJECT_ID"
  images:
  - 'gcr.io/$PROJECT_ID/auth-btl-backend-dev:$COMMIT_SHA'
  options:

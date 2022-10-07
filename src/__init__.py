@@ -12,7 +12,7 @@ from config import envConfig, gCloudConfig
 
 app = Flask(__name__)
 
-load_dotenv(find_dotenv('.env_dev'))
+#load_dotenv(find_dotenv('.env_dev'))
 
 firebase_admin.initialize_app()
 # Swagger configurations
