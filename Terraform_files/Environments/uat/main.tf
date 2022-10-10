@@ -31,30 +31,30 @@ module "secret-manager" {
   }
 
 
-  versions = {
-    user_flow_api_auth = {
+  # versions = {
+  #   user_flow_api_auth = {
 
-      v1 = { enabled = true, data = "${var.user_flow_api_auth}" }
+  #     v1 = { enabled = true, data = "${var.user_flow_api_auth}" }
 
-    },
-    FIREBASE_WEB_API_KEY = {
+  #   },
+  #   FIREBASE_WEB_API_KEY = {
 
-      v1 = { enabled = true, data = "${var.FIREBASE_WEB_API_KEY}" }
+  #     v1 = { enabled = true, data = "${var.FIREBASE_WEB_API_KEY}" }
 
-    }
-    ADMIN_ANGULAR_ENVIRONMENT_CONFIG = {
+  #   }
+  #   ADMIN_ANGULAR_ENVIRONMENT_CONFIG = {
 
-      v1 = { enabled = true, data = "${var.ADMIN_ANGULAR_ENVIRONMENT_CONFIG}" }
+  #     v1 = { enabled = true, data = "${var.ADMIN_ANGULAR_ENVIRONMENT_CONFIG}" }
 
-    }
-    USER_FLOW_ANGULAR_ENVIRONMENT_CONFIG = {
+  #   }
+  #   USER_FLOW_ANGULAR_ENVIRONMENT_CONFIG = {
 
-      v1 = { enabled = true, data = "${var.USER_FLOW_ANGULAR_ENVIRONMENT_CONFIG}" }
+  #     v1 = { enabled = true, data = "${var.USER_FLOW_ANGULAR_ENVIRONMENT_CONFIG}" }
 
-    }
+  #   }
 
 
-  }
+  # }
   depends_on = [
     google_project_service.service
   ]
