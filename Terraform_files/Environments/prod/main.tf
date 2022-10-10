@@ -26,6 +26,8 @@ module "secret-manager" {
   secrets = {
     user_flow_api_auth   = null
     FIREBASE_WEB_API_KEY = null
+    ADMIN_ANGULAR_ENVIRONMENT_CONFIG = null
+    USER_FLOW_ANGULAR_ENVIRONMENT_CONFIG = null
 
   }
 
@@ -39,6 +41,16 @@ module "secret-manager" {
     FIREBASE_WEB_API_KEY = {
 
       v1 = { enabled = true, data = "${var.FIREBASE_WEB_API_KEY}" }
+
+    }
+    ADMIN_ANGULAR_ENVIRONMENT_CONFIG = {
+
+      v1 = { enabled = true, data = "${var.ADMIN_ANGULAR_ENVIRONMENT_CONFIG}" }
+
+    }
+    USER_FLOW_ANGULAR_ENVIRONMENT_CONFIG = {
+
+      v1 = { enabled = true, data = "${var.USER_FLOW_ANGULAR_ENVIRONMENT_CONFIG}" }
 
     }
 

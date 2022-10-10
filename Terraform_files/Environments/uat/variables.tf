@@ -111,6 +111,17 @@ variable "substitutions" {
 
 }
 
+variable "ADMIN_ANGULAR_ENVIRONMENT_CONFIG" {
+  description = "Admin flow environment configuration as secret value."
+  type        = string
+  default     = "null"
+}
+
+variable "USER_FLOW_ANGULAR_ENVIRONMENT_CONFIG" {
+  description =  "User flow environment configuration as secret value."
+  type        = string
+  default     = "null"
+}
 
 
 variable "security_rules" {
