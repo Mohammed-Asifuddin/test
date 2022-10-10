@@ -19,6 +19,9 @@
    - '--allow-unauthenticated'
    - "--set-env-vars"
    - "PROJECT_ID=$PROJECT_ID"
+   - "--service-account"
+   - "${_CLOUD_RUN_SA}"
+
  images:
  - 'gcr.io/$PROJECT_ID/auth-btl-backend-dev:$COMMIT_SHA'
  options:
