@@ -96,44 +96,27 @@ resource "google_firestore_document" "product_doc" {
   fields = jsonencode(
     {
 
-      "prd-${each.value}" = {
-        mapValue = {
-          fields = {
-            "category" = {
-              stringValue = "${local.category[tonumber(each.value)]}"
-            },
+      "category" = {
+        stringValue = "${local.category[tonumber(each.value)]}"
+      },
 
-            "category_code" = {
-              stringValue = "${local.category_code[tonumber(each.value)]}"
-            },
+      "category_code" = {
+        stringValue = "${local.category_code[tonumber(each.value)]}"
+      },
 
-            "category_id" = {
-              stringValue = "${local.category_id[tonumber(each.value)]}"
-            },
+      "category_id" = {
+        stringValue = "${local.category_id[tonumber(each.value)]}"
+      },
 
-            "description" = {
-              stringValue = "${local.description[tonumber(each.value)]}"
-            }
-
-
-          }
-        }
+      "description" = {
+        stringValue = "${local.description[tonumber(each.value)]}"
       }
+
+
     }
+
   )
-  #fields      = "{\"some-doc\":{\"mapValue\":{\"fields\":{\"some_key\":{\"stringValue\":\"value\"},\"some_key2\":{\"stringValue\":\"value2\"}}}}}"
 
-  # for_each=local.prod_fields
-  # document_id=each.key
-  # dynamic fields = {
-
-  # }
-
-
-  # depends_on = [
-  #   #google_firebase_project.btl_firebase,
-  #   google_app_engine_application.app
-  # ]
 }
 
 
@@ -143,7 +126,7 @@ resource "google_firestore_document" "product_doc" {
 
 resource "google_cloudbuild_trigger" "btl-triggers" {
   count   = length(var.repo_names)
-  name    = var.repo_names[count.index]
+  name    = "${var.repo_names[count.index]}-${var.env}"
   project = var.project_id
   source_to_build {
     uri       = var.repo_links[count.index]
@@ -157,18 +140,15 @@ resource "google_cloudbuild_trigger" "btl-triggers" {
     revision  = "refs/heads/${var.branchs[count.index]}"
     repo_type = "GITHUB"
   }
+ service_account = module.btl_service_account.email
 
-  # trigger_template {
-  #   branch_name = "${var.branchs[count.index]}"
-  #   repo_name   = "${var.repo_names[count.index]}"
-  # }
   #substitutions = var.substitutions
-   substitutions = {
-    _PROJECT_ID     = var.project_id
+  substitutions = {
+    _PROJECT_ID = var.project_id
+    _CLOUD_RUN_SA= module.btl_service_account.email
   }
-  // If this is set on a build, it will become pending when it is run, 
-  // and will need to be explicitly approved to start.
- 
+
+
   approval_config {
     approval_required = false
   }

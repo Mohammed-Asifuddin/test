@@ -7,21 +7,11 @@ locals {
   #Firestore Fields For Configuration Collection
   conf_field = jsonencode(
     {
-
-      "con-1" = {
-        mapValue = {
-          fields = {
-            "pubsub_video_to_image_topic_name" = {
-              stringValue = "btl_video_to_image"
-            },
-
-            "secret_manager_key_for_user_flow" = {
-              stringValue = "user_flow_api_auth"
-            }
-
-
-          }
-        }
+      "pubsub_video_to_image_topic_name" = {
+        stringValue = "btl_video_to_image"
+      },
+      "secret_manager_key_for_user_flow" = {
+        stringValue = "user_flow_api_auth"
       }
     }
   )

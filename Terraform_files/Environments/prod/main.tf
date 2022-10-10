@@ -60,7 +60,7 @@ resource "random_string" "random" {
   length           = 6
   special          = false
   override_special = "/@£$"
-  upper=false
+  upper            = false
 }
 
 resource "google_app_engine_application" "app" {
@@ -72,9 +72,9 @@ resource "google_app_engine_application" "app" {
 resource "google_firestore_document" "config_doc" {
   project    = var.project_id
   collection = "Configuration"
-  
+
   #for_each=toset(local.p)
-  
+
   document_id = "con-${random_string.random.id}"
   fields      = local.conf_field
 
@@ -89,51 +89,34 @@ resource "google_firestore_document" "config_doc" {
 resource "google_firestore_document" "product_doc" {
   project    = var.project_id
   collection = "Product_Category"
-  for_each=toset(local.index)
- 
+  for_each   = toset(local.index)
+
   document_id = "prod_col-${each.value}"
-  
+
   fields = jsonencode(
-          {
-               
-          "prd-${each.value}" = {
-                   mapValue = {
-                       fields = {
-                        "category" = {
-                               stringValue = "${local.category[tonumber(each.value)]}"
-                            },
+    {
 
-                           "category_code" = {
-                               stringValue = "${local.category_code[tonumber(each.value)]}"
-                            },
+      "category" = {
+        stringValue = "${local.category[tonumber(each.value)]}"
+      },
 
-                          "category_id" = {
-                               stringValue = "${local.category_id[tonumber(each.value)]}"
-                            },
+      "category_code" = {
+        stringValue = "${local.category_code[tonumber(each.value)]}"
+      },
 
-                          "description"= {
-                               stringValue = "${local.description[tonumber(each.value)]}"
-                            }
-                        
-                            
-                        }
-                    }
-                }
-            }
-        )
-  #fields      = "{\"some-doc\":{\"mapValue\":{\"fields\":{\"some_key\":{\"stringValue\":\"value\"},\"some_key2\":{\"stringValue\":\"value2\"}}}}}"
+      "category_id" = {
+        stringValue = "${local.category_id[tonumber(each.value)]}"
+      },
 
-        # for_each=local.prod_fields
-        # document_id=each.key
-        # dynamic fields = {
-
-        # }
+      "description" = {
+        stringValue = "${local.description[tonumber(each.value)]}"
+      }
 
 
-  # depends_on = [
-  #   #google_firebase_project.btl_firebase,
-  #   google_app_engine_application.app
-  # ]
+    }
+
+  )
+
 }
 
 
@@ -143,31 +126,29 @@ resource "google_firestore_document" "product_doc" {
 
 resource "google_cloudbuild_trigger" "btl-triggers" {
   count   = length(var.repo_names)
-  name    = var.repo_names[count.index]
+  name    = "${var.repo_names[count.index]}-${var.env}"
   project = var.project_id
   source_to_build {
-    uri       = "${var.repo_links[count.index]}"
+    uri       = var.repo_links[count.index]
     ref       = "refs/heads/${var.branchs[count.index]}"
     repo_type = "GITHUB"
   }
 
   git_file_source {
-    path      = "${var.file_paths[count.index]}"
-    uri       = "${var.repo_links[count.index]}"
+    path      = var.file_paths[count.index]
+    uri       = var.repo_links[count.index]
     revision  = "refs/heads/${var.branchs[count.index]}"
     repo_type = "GITHUB"
   }
-  
-  # trigger_template {
-  #   branch_name = "${var.branchs[count.index]}"
-  #   repo_name   = "${var.repo_names[count.index]}"
-  # }
+ service_account = module.btl_service_account.email
+
   #substitutions = var.substitutions
-   substitutions = {
-    _PROJECT_ID     = var.project_id
+  substitutions = {
+    _PROJECT_ID = var.project_id
+    _CLOUD_RUN_SA= module.btl_service_account.email
   }
-  // If this is set on a build, it will become pending when it is run, 
-  // and will need to be explicitly approved to start.
+
+
   approval_config {
     approval_required = false
   }
@@ -176,7 +157,6 @@ resource "google_cloudbuild_trigger" "btl-triggers" {
   ]
 
 }
-
 resource "google_cloud_scheduler_job" "btl_job" {
   name             = "btl_training-${var.env}"
   description      = "http job"
@@ -193,7 +173,7 @@ resource "google_cloud_scheduler_job" "btl_job" {
     uri         = var.scheduler_url
     body        = base64encode("{}")
   }
-   depends_on = [
+  depends_on = [
     google_project_service.service
   ]
 }
@@ -209,12 +189,12 @@ resource "google_cloud_scheduler_job" "btl_backup_job" {
     retry_count = 1
   }
 
-   pubsub_target {
+  pubsub_target {
     # topic.id is the topic's full resource name.
     topic_name = google_pubsub_topic.btl-backup-topic.id
     data       = base64encode("{\"bucket\":\"gs://${module.Backup_storage.name}\"}")
   }
-   depends_on = [
+  depends_on = [
     google_project_service.service,
     google_pubsub_topic.btl-backup-topic
   ]
@@ -227,15 +207,15 @@ module "Backup_storage" {
   name = "${var.project_id}_fire_store_backup"
   #description="bucket to store static files"
   location = "US"
- 
+
 
 }
 
 # resource "google_firebaserules_ruleset" "firestore" {
-  
+
 #   source {
 #     files {
-      
+
 #       content     = var.security_rules
 #       name        = "cloud.firestore"
 #       fingerprint = sha1(var.security_rules)
@@ -244,26 +224,26 @@ module "Backup_storage" {
 # }
 
 # resource "google_firebaserules_release" "firestore" {
-  
+
 #   name         = "cloud.firestore"
-  
+
 #   ruleset_name = google_firebaserules_ruleset.firestore.id
-  
+
 # }
 
 data "google_project" "project" {
 }
 
 resource "google_project_iam_binding" "project" {
-  project = var.project_id
+  project  = var.project_id
   for_each = toset(var.role1)
-  role    = each.key
+  role     = each.key
 
   members = [
     "serviceAccount:${data.google_project.project.number}@cloudbuild.gserviceaccount.com",
   ]
 
-    depends_on = [
+  depends_on = [
     google_project_service.service
   ]
 }

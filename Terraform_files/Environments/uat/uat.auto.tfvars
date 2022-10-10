@@ -55,11 +55,11 @@ iam_permissions_sa_1 = [
 repo_links = ["https://github.com/springml-code/btlabel-backend", "https://github.com/springml-code/btlabel-ui", "https://github.com/springml-code/btlabel-admin-ui"]
 branchs    = ["secret-manager-integration", "btl-client", "admin-ui-base"]
 file_paths = ["cloudbuild.yaml", "cloudbuild.yaml", "cloudbuild.yaml"]
-repo_names = ["btl-backend-trigger", "btl-client-ui-trigger", "btl-admin-ui-trigger"]
+repo_names = ["btl-api-service", "btl-user-flow-ui", "btl-admin-ui"]
 
-scheduler_url = "https://replacewithcloudrunurl/product-training"
-scheduler_url2 = "https://replacewithcloudrunurl/backup"
-scheduler_freq = "0 */1 * * *"
+scheduler_url   = "https://replacewithcloudrunurl/product-training"
+scheduler_url2  = "https://replacewithcloudrunurl/backup"
+scheduler_freq  = "0 */1 * * *"
 scheduler_freq2 = "0 0 * * SUN"
 
 
