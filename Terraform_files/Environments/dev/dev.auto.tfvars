@@ -1,5 +1,5 @@
 project_id = "centering-cable-362607"
-env        = "dev"
+env        = "mydev"
 
 region      = "us-west1"
 topic_name  = "btl_video_to_image"

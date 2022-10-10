@@ -43,11 +43,13 @@ module "secret-manager" {
   #     v1 = { enabled = true, data = "${var.FIREBASE_WEB_API_KEY}" }
 
   #   }
+
   #   ADMIN_ANGULAR_ENVIRONMENT_CONFIG = {
 
   #     v1 = { enabled = true, data = "${var.ADMIN_ANGULAR_ENVIRONMENT_CONFIG}" }
 
   #   }
+
   #   USER_FLOW_ANGULAR_ENVIRONMENT_CONFIG = {
 
   #     v1 = { enabled = true, data = "${var.USER_FLOW_ANGULAR_ENVIRONMENT_CONFIG}" }
@@ -75,61 +77,61 @@ resource "random_string" "random" {
   upper            = false
 }
 
-resource "google_app_engine_application" "app" {
-  project       = var.project_id
-  location_id   = var.region
-  database_type = "CLOUD_FIRESTORE"
-}
+# resource "google_app_engine_application" "app" {
+#   project       = var.project_id
+#   location_id   = var.region
+#   database_type = "CLOUD_FIRESTORE"
+# }
 
-resource "google_firestore_document" "config_doc" {
-  project    = var.project_id
-  collection = "Configuration"
+# resource "google_firestore_document" "config_doc" {
+#   project    = var.project_id
+#   collection = "Configuration"
 
-  #for_each=toset(local.p)
+#   #for_each=toset(local.p)
 
-  document_id = "con-${random_string.random.id}"
-  fields      = local.conf_field
-
-
-
-  # depends_on = [
-  #   #google_firebase_project.btl_firebase,
-  #   google_app_engine_application.app
-  # ]
-}
-
-resource "google_firestore_document" "product_doc" {
-  project    = var.project_id
-  collection = "Product_Category"
-  for_each   = toset(local.index)
-
-  document_id = "prod_col-${each.value}"
-
-  fields = jsonencode(
-    {
-
-      "category" = {
-        stringValue = "${local.category[tonumber(each.value)]}"
-      },
-
-      "category_code" = {
-        stringValue = "${local.category_code[tonumber(each.value)]}"
-      },
-
-      "category_id" = {
-        stringValue = "${local.category_id[tonumber(each.value)]}"
-      },
-
-      "description" = {
-        stringValue = "${local.description[tonumber(each.value)]}"
-      }
+#   document_id = "con-${random_string.random.id}"
+#   fields      = local.conf_field
 
 
-    }
 
-  )
+#   # depends_on = [
+#   #   #google_firebase_project.btl_firebase,
+#   #   google_app_engine_application.app
+#   # ]
+# }
 
-}
+# resource "google_firestore_document" "product_doc" {
+#   project    = var.project_id
+#   collection = "Product_Category"
+#   for_each   = toset(local.index)
+
+#   document_id = "prod_col-${each.value}"
+
+#   fields = jsonencode(
+#     {
+
+#       "category" = {
+#         stringValue = "${local.category[tonumber(each.value)]}"
+#       },
+
+#       "category_code" = {
+#         stringValue = "${local.category_code[tonumber(each.value)]}"
+#       },
+
+#       "category_id" = {
+#         stringValue = "${local.category_id[tonumber(each.value)]}"
+#       },
+
+#       "description" = {
+#         stringValue = "${local.description[tonumber(each.value)]}"
+#       }
+
+
+#     }
+
+#   )
+
+# }
 
 
 
@@ -152,7 +154,7 @@ resource "google_cloudbuild_trigger" "btl-triggers" {
     revision  = "refs/heads/${var.branchs[count.index]}"
     repo_type = "GITHUB"
   }
- service_account = module.btl_service_account.email
+ #service_account = module.btl_service_account.email
 
   #substitutions = var.substitutions
   substitutions = {
@@ -165,10 +167,12 @@ resource "google_cloudbuild_trigger" "btl-triggers" {
     approval_required = false
   }
   depends_on = [
-    google_project_service.service
+    google_project_service.service,
+    module.btl_service_account
   ]
 
 }
+
 resource "google_cloud_scheduler_job" "btl_job" {
   name             = "btl_training-${var.env}"
   description      = "http job"
