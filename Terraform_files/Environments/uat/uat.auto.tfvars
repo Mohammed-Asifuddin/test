@@ -53,7 +53,7 @@ iam_permissions_sa_1 = [
 
 
 repo_links = ["https://github.com/springml-code/btlabel-backend", "https://github.com/springml-code/btlabel-ui", "https://github.com/springml-code/btlabel-admin-ui"]
-branchs    = ["secret-manager-integration", "btl-client", "admin-ui-base"]
+branchs    = ["develop", "develop", "develop"]
 file_paths = ["cloudbuild.yaml", "cloudbuild.yaml", "cloudbuild.yaml"]
 repo_names = ["btl-api-service", "btl-user-flow-ui", "btl-admin-ui"]
 
