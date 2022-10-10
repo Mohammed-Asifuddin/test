@@ -1,5 +1,5 @@
-project_id = "Enter Your Project Id"
-env        = "uat"
+project_id = "centering-cable-362607"
+env        = "uat23"
 region="us-west1"
 
 topic_name = "btl_video_to_image"

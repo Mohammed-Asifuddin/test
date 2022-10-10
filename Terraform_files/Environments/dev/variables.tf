@@ -27,7 +27,9 @@ variable "role1" {
   description = "List of permission for cloud build service Account"
   default = [
     "roles/run.admin",
-    "roles/iam.serviceAccountUser"
+    "roles/iam.serviceAccountUser",
+     "roles/storage.admin",
+    "roles/cloudbuild.builds.builder"
   ]
 }
 
