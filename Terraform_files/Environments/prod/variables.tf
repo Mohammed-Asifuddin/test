@@ -29,7 +29,8 @@ variable "role1" {
     "roles/run.admin",
     "roles/iam.serviceAccountUser",
      "roles/storage.admin",
-    "roles/cloudbuild.builds.builder"
+    "roles/cloudbuild.builds.builder",
+    "roles/secretmanager.secretAccessor"
   ]
 }
 
