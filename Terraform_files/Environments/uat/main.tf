@@ -32,44 +32,12 @@ module "secret-manager" {
   }
 
 
-  # versions = {
-  #   user_flow_api_auth = {
 
-  #     v1 = { enabled = true, data = "${var.user_flow_api_auth}" }
-
-  #   },
-  #   FIREBASE_WEB_API_KEY = {
-
-  #     v1 = { enabled = true, data = "${var.FIREBASE_WEB_API_KEY}" }
-
-  #   }
-
-  #   ADMIN_ANGULAR_ENVIRONMENT_CONFIG = {
-
-  #     v1 = { enabled = true, data = "${var.ADMIN_ANGULAR_ENVIRONMENT_CONFIG}" }
-
-  #   }
-
-  #   USER_FLOW_ANGULAR_ENVIRONMENT_CONFIG = {
-
-  #     v1 = { enabled = true, data = "${var.USER_FLOW_ANGULAR_ENVIRONMENT_CONFIG}" }
-
-  #   }
-
-
-  # }
   depends_on = [
     google_project_service.service
   ]
 }
 
-# resource "google_firebase_project" "btl_firebase" {
-#   provider = google-beta
-#   project  = var.project_id
-#   depends_on = [
-#     google_project_service.service
-#   ]
-# }
 resource "random_string" "random" {
   length           = 6
   special          = false
@@ -83,55 +51,57 @@ resource "random_string" "random" {
 #   database_type = "CLOUD_FIRESTORE"
 # }
 
-# resource "google_firestore_document" "config_doc" {
-#   project    = var.project_id
-#   collection = "Configuration"
+resource "google_firestore_document" "config_doc" {
+  project    = var.project_id
+  collection = "Configuration"
 
-#   #for_each=toset(local.p)
+  #for_each=toset(local.p)
 
-#   document_id = "con-${random_string.random.id}"
-#   fields      = local.conf_field
-
-
-
-#   # depends_on = [
-#   #   #google_firebase_project.btl_firebase,
-#   #   google_app_engine_application.app
-#   # ]
-# }
-
-# resource "google_firestore_document" "product_doc" {
-#   project    = var.project_id
-#   collection = "Product_Category"
-#   for_each   = toset(local.index)
-
-#   document_id = "prod_col-${each.value}"
-
-#   fields = jsonencode(
-#     {
-
-#       "category" = {
-#         stringValue = "${local.category[tonumber(each.value)]}"
-#       },
-
-#       "category_code" = {
-#         stringValue = "${local.category_code[tonumber(each.value)]}"
-#       },
-
-#       "category_id" = {
-#         stringValue = "${local.category_id[tonumber(each.value)]}"
-#       },
-
-#       "description" = {
-#         stringValue = "${local.description[tonumber(each.value)]}"
-#       }
+  document_id = "con-${random_string.random.id}"
+  fields      = local.conf_field
 
 
-#     }
 
-#   )
+ depends_on = [
+    google_project_service.service
+  ]
+}
 
-# }
+resource "google_firestore_document" "product_doc" {
+  project    = var.project_id
+  collection = "Product_Category"
+  for_each   = toset(local.index)
+
+  document_id = "prod_col-${each.value}"
+
+  fields = jsonencode(
+    {
+
+      "category" = {
+        stringValue = "${local.category[tonumber(each.value)]}"
+      },
+
+      "category_code" = {
+        stringValue = "${local.category_code[tonumber(each.value)]}"
+      },
+
+      "category_id" = {
+        stringValue = "${local.category_id[tonumber(each.value)]}"
+      },
+
+      "description" = {
+        stringValue = "${local.description[tonumber(each.value)]}"
+      }
+
+
+    }
+
+  )
+   depends_on = [
+    google_project_service.service
+  ]
+
+}
 
 
 

@@ -1,5 +1,5 @@
-project_id = "centering-cable-362607"
-env        = "dev"
+project_id = "charged-thought-365806"
+env        = "dev2"
 
 region      = "us-west1"
 topic_name  = "btl_video_to_image"
