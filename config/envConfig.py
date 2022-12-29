@@ -1,6 +1,0 @@
-envVariables = {
-    "cors": {
-        "dev": "*",
-        "prod": ""
-    }
-}

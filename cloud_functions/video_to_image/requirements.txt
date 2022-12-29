@@ -1,5 +1,0 @@
-# Function dependencies, for example:
-# package>=version
-firebase-admin==5.2.0
-google-cloud-storage==2.5.0
-opencv-python==4.6.0.66
